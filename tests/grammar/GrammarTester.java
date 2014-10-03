@@ -43,7 +43,7 @@ public class GrammarTester {
                 SQLGrammarParser parser = new SQLGrammarParser(new CommonTokenStream(
                         new SQLGrammarLexer(new ANTLRInputStream(new FileInputStream(testName)))));
 
-                parser.script();
+                System.out.println(parser.script().result);
             } catch (IOException e) {
                 handleException(e);
             }

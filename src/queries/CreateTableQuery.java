@@ -29,6 +29,14 @@ public class CreateTableQuery implements IQuery {
     }
 
     @Override
+    public String toString() {
+        return "CreateTableQuery{" +
+                "id='" + id + '\'' +
+                ", attributes=" + attributes +
+                '}';
+    }
+
+    @Override
     public void execute() {
 
     }

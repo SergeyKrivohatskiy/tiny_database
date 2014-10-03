@@ -15,8 +15,14 @@ import queries.*;
 
 }
 
-script
-    :   query+ EOF
+script returns [List<IQuery> result]
+@init {
+    $result = new ArrayList<>();
+}
+    :   (   query {
+        $result.add($query.result);
+    }
+    )+ EOF
     ;
 
 query returns [IQuery result]
