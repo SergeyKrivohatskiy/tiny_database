@@ -9,30 +9,38 @@ public interface BufferManager extends Closeable {
     /**
      * Returns page with specified pageIndex from specified set
      * returnPage should be called after page use
+     * Page set gets additional pages from file if pageIndex >= page set size
      * @param setId
      * @param pageIndex
      * @return page with specified pageId from specified set
      */
-    Page getPage(int setId, int pageIndex);
+    public Page getPage(int setId, int pageIndex);
+
+    /**
+     * Return current page set size
+     * @param setId
+     * @return page set size in pages
+     */
+    public int getPagesCount(int setId);
 
     /**
      * This method should be called after page use
      * @param page
      */
-    void returnPage(Page page);
+    public void returnPage(Page page);
 
     /**
      * Removes page with specified pageIndex from specified set
      * @param setId
      * @param pageIndex
      */
-    void removePage(int setId, int pageIndex);
+    public void removePage(int setId, int pageIndex);
 
     /**
      * Creates page set
      * @return setId
      */
-    int createPageSet();
+    public int createPageSet();
 
     /**
      * Returns page with specified pageId from MetaInformation set that created automatically
@@ -40,5 +48,5 @@ public interface BufferManager extends Closeable {
      * @param pageIndex
      * @return page with specified pageId from MetaInformation set
      */
-    Page getMetaInformationPage(int pageIndex);
+    public Page getMetaInformationPage(int pageIndex);
 }
