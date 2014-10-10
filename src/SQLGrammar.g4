@@ -29,18 +29,21 @@ query returns [IQuery result]
 @init {
     $result = null;
 }
-    :   (   createTable {
+    :   ( (   createTable {
         $result = $createTable.result;
     }
-    ) SEMICOLON
+    ) | (   selectFrom {
+        $result = $selectFrom.result;
+    }
+    ) ) SEMICOLON
     ;
 
 createTable returns [CreateTableQuery result]
 @init {
     List<Attribute> attributes = new ArrayList<>();
 }
-    :   CREATE TABLE id LEFT_PARENTHESIS attribute {
-        $result = new CreateTableQuery($id.text, attributes);
+    :   CREATE TABLE firstLevelId LEFT_PARENTHESIS attribute {
+        $result = new CreateTableQuery($firstLevelId.text, attributes);
         attributes.add($attribute.result);
     }
     (
@@ -48,72 +51,140 @@ createTable returns [CreateTableQuery result]
             attribute {
                 attributes.add($attribute.result);
             }
-        //|   tableConstraint
         )
     )*
     RIGHT_PARENTHESIS
     ;
 
 attribute returns [Attribute result]
-    :   id dataType //attributeConstraint*
-    {
-        $result = new Attribute($id.text, $dataType.result);
+    :   firstLevelId dataType {
+        $result = new Attribute($firstLevelId.text, $dataType.result);
     }
     ;
-
-//tableConstraint : ; // TODO
-//attributeConstraint : ; // TODO
 
 dataType returns [Attribute.DataType result]
 @init {
     $result = null;
 }
     :   INTEGER_TYPE {
-        $result = Attribute.DataType.INTEGER;
+        $result = new Attribute.IntegerType();
     }
-    |   charType {
-        $result = Attribute.DataType.CHAR;
+    |   DOUBLE_TYPE {
+        $result = new Attribute.DoubleType();
     }
     |   varCharType {
-        $result = Attribute.DataType.VARCHAR;
+        $result = new Attribute.VarcharType($varCharType.length);
     }
+    ;
+
+varCharType returns [int length]
+    :   VAR_CHAR_TYPE LEFT_PARENTHESIS integerLiteral RIGHT_PARENTHESIS {
+        $length = $integerLiteral.value;
+    }
+    ;
+
+integerLiteral returns [int value]
+    :   SIGN? DECIMAL_DIGIT+ {
+        $value = Integer.valueOf($text);
+    }
+    ;
+
+doubleLiteral returns [double value]
+    :   SIGN? DECIMAL_DIGIT+ DECIMAL_POINT DECIMAL_DIGIT*
+    |   SIGN? DECIMAL_POINT? DECIMAL_DIGIT+ {
+        $value = Double.valueOf($text);
+    }
+    ;
+
+firstLevelId
+    :   ( UNDERLINE idSuffix
+    ) | ( (
+            LOWER_CASE
+        |   UPPER_CASE
+        ) idSuffix?
+    )
+    ;
+
+idSuffix
+    :   (
+        LOWER_CASE
+    |   UPPER_CASE
+    |   DECIMAL_DIGIT
+    |   UNDERLINE
+    )+
+    ;
+
+selectFrom returns [SelectFromQuery result]
+    :   SELECT filter FROM table
+    ;
+
+filter
+    :   ASTERISC
+    |   firstLevelId (COMMA firstLevelId)*
+    ;
+
+table
+    :   firstLevelId (join)*
+    ;
+
+join
+    :   INNER JOIN firstLevelId ON joinStatement
+    ;
+
+joinStatement
+    :   secondLevelId EQUALS secondLevelId
+    ;
+
+secondLevelId
+    :   firstLevelId ~WHITE_SPACE DOT ~WHITE_SPACE firstLevelId
     ;
 
 INTEGER_TYPE
     :   'INTEGER'
-    //|   'integer'
     ;
 
-charType
-    :   CHAR_TYPE LEFT_PARENTHESIS integerLiteral RIGHT_PARENTHESIS
-    ;
-
-CHAR_TYPE
-    :   'CHAR'
-    //|   'char'
-    ;
-
-varCharType
-    :   VAR_CHAR_TYPE LEFT_PARENTHESIS integerLiteral RIGHT_PARENTHESIS
+DOUBLE_TYPE
+    :   'DOUBLE'
     ;
 
 VAR_CHAR_TYPE
     :   'VARCHAR'
-    //|   'varchar'
     ;
 
 CREATE
     :   'CREATE'
-    //|   'create'
     ;
 
 TABLE
     :   'TABLE'
-    //|   'table'
+    ;
+
+SELECT
+    :   'SELECT'
+    ;
+
+FROM
+    :   'FROM'
+    ;
+
+INNER
+    :   'INNER'
+    ;
+
+JOIN
+    :   'JOIN'
+    ;
+
+ON
+    :   'ON'
     ;
 
 COMMA
     :   ','
+    ;
+
+ASTERISC
+    :   '*'
     ;
 
 LEFT_PARENTHESIS
@@ -147,28 +218,23 @@ UNDERLINE
     :   '_'
     ;
 
-id
-    :   ( UNDERLINE idSuffix
-    ) | ( (
-            LOWER_CASE
-        |   UPPER_CASE
-        ) idSuffix?
-    )
-    ;
-
-idSuffix
-    :   (
-        LOWER_CASE
-    |   UPPER_CASE
-    |   DECIMAL_DIGIT
-    |   UNDERLINE
-    )+
-    ;
-
 DECIMAL_DIGIT
     :   '0' .. '9'
     ;
 
-integerLiteral
-    :   DECIMAL_DIGIT+
+SIGN
+    :   '+'
+    |   '-'
+    ;
+
+DECIMAL_POINT
+    :   '.'
+    ;
+
+DOT
+    :   '.'
+    ;
+
+EQUALS
+    :   '='
     ;
