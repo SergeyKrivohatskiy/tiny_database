@@ -14,9 +14,9 @@ import java.util.concurrent.ExecutionException;
 public class BufferManagerTester {
 
     private static final String TEST_DB_NAME = "db_test";
-    private static final int META_PAGES_COUNT = 303;
-    private static final int NEW_SETS_COUNT = 123;
-    private static final int SETS_PAGES_COUNT = 321;
+    private static final int META_PAGES_COUNT = 19009;
+    private static final int NEW_SETS_COUNT = 12;
+    private static final int SETS_PAGES_COUNT = 32078;
 
     public static void main(String[] args) throws IOException, ExecutionException {
         new File(TEST_DB_NAME).delete();
@@ -36,7 +36,7 @@ public class BufferManagerTester {
                 byte[] arr = buffer.array();
 
                 for(int k = 0; k < arr.length; k++) {
-                    arr[j] = (byte) 1;
+                    arr[k] = (byte) 1;
                 }
             }
         }
@@ -51,8 +51,9 @@ public class BufferManagerTester {
                 assert arr[j] == (byte) j;
             }
         }
-        bufferManager.removePage(BufferManager.META_INFORMATION_SET_ID, 1);
+        bufferManager.removePage(BufferManager.META_INFORMATION_SET_ID, 0);
         bufferManager.removePage(BufferManager.META_INFORMATION_SET_ID, 2);
+        bufferManager.removePage(BufferManager.META_INFORMATION_SET_ID, META_PAGES_COUNT - 3);
 
         bufferManager.close();
     }

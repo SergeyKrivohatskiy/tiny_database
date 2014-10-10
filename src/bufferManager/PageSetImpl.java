@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutionException;
  * Created by Sergey on 09.10.2014.
  */
 public class PageSetImpl implements PageSet {
-    private static final int MAX_PAGE_POSITIONS = 100;
+    private static final int MAX_PAGE_POSITIONS = 100000;
     private long[] pagePositions = new long[MAX_PAGE_POSITIONS];
     protected LoadingCache<Long, PageImpl> pageCache;
     private int pointers_loaded;
@@ -29,30 +29,48 @@ public class PageSetImpl implements PageSet {
 
     @Override
     public void removePage(int index) throws ExecutionException {
+        if (pointers_loaded == 0) {
+            return;
+        }
         PageImpl page = findPage(index);
         where_begin = 0;
         pointers_loaded = 1;
-        if(page.getPrev() != 0) {
-            PageImpl prev = findPage(index - 1);
+        if (page.getPrev() == page.getNext() && page.getPrev() == 0) {
+            descriptor.changeFirstPage(setId, 0);
+            pointers_loaded = 0;
+            descriptor.returnFreePage(page);
+            return;
+        }
+        PageImpl prev = null, next = null;
+        if (page.getPrev() != 0) {
+            prev = findPage(index - 1);
             prev.setNext(page.getNext());
             pageCache.put(prev.getPos(), prev);
             begin_index = index - 1;
             pagePositions[0] = prev.getPos();
         } else {
             descriptor.changeFirstPage(setId, page.getNext());
-        }
-        if(page.getNext() != 0) {
-            PageImpl next = findPage(index - 1);
-            next.setNext(page.getPrev());
-            pageCache.put(next.getPos(), next);
-            begin_index = index + 1;
-            pagePositions[0] = next.getPos();
+            if (page.getNext() != 0) {
+                next = findPage(index + 1);
+                next.setNext(page.getPrev());
+                pageCache.put(next.getPos(), next);
+                begin_index = index + 1;
+                pagePositions[0] = next.getPos();
+            }
         }
         descriptor.returnFreePage(page);
     }
 
     @Override
     public PageImpl findPage(int page_index) throws ExecutionException {
+        if(pointers_loaded == 0) {
+            PageImpl firstPage = descriptor.getFreePage(setId);
+            pagePositions[0] = firstPage.getPos();
+            descriptor.changeFirstPage(setId, firstPage.getPos());
+            pointers_loaded = 1;
+            where_begin = 0;
+            begin_index = 0;
+        }
         if (page_index < 0) {
             throw(new IndexOutOfBoundsException("Page index is " + page_index));
         }
