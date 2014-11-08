@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Created by Sergey on 27.10.2014.
  */
-public class TableImpl implements Table {
+public class TableBase {
     private final static int POINTERS_SIZE = 8;
     private final BufferManager bufferManager;
     private final int firstPage;
@@ -19,7 +19,7 @@ public class TableImpl implements Table {
     private int firstFullPage;
     private int firstNotFullPage;
 
-    public TableImpl(BufferManager bufferManager, int firstPage, int recordSize) {
+    public TableBase(BufferManager bufferManager, int firstPage, int recordSize) {
         this.bufferManager = bufferManager;
         this.firstPage = firstPage;
         this.recordSize = recordSize;
@@ -47,7 +47,6 @@ public class TableImpl implements Table {
         }
     }
 
-    @Override
     public int insert(byte[] row) throws ExecutionException {
         if(row.length != recordSize) {
             throw new IllegalArgumentException();
@@ -125,7 +124,6 @@ public class TableImpl implements Table {
         return pageIndex * recordsPerPage + recordPosition;
     }
 
-    @Override
     public BufferView get(int recordId) throws ExecutionException {
         int pageIndex = recordId / recordsPerPage;
         int recordPosition = recordId % recordsPerPage;
@@ -140,7 +138,6 @@ public class TableImpl implements Table {
         }
     }
 
-    @Override
     public Iterator<BufferView> iterator() {
         return null;
     }

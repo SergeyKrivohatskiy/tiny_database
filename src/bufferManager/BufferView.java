@@ -1,7 +1,10 @@
 package bufferManager;
 
+import utils.Utils;
+
 import java.io.Closeable;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * Created by Sergey on 27.10.2014.
@@ -38,6 +41,13 @@ public class BufferView implements Closeable {
         checkIndex(idx, length);
         buffer[offset + idx] = b;
     }
+
+    public byte[] getBytes(int idx, int length) {
+        checkClosed();
+        checkIndex(idx, this.length - length + 1);
+        return Arrays.copyOfRange(buffer, offset + idx, offset + idx + length);
+    }
+
     public void setBytes(int idx, byte[] row) {
         checkClosed();
         checkIndex(idx, length - row.length + 1);
@@ -53,7 +63,7 @@ public class BufferView implements Closeable {
     public void setInt(int idx, int i) {
         checkClosed();
         checkIndex(idx, length - 3);
-        byte[] iBytes = ByteBuffer.allocate(4).putInt(i).array();
+        byte[] iBytes = Utils.intToBytes(i);
         copyBytesFromIdx(idx, iBytes);
     }
 
