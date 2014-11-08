@@ -1,11 +1,17 @@
 package BufferManager;
 
 import bufferManager.BufferManager;
-import bufferManager.BufferManagerImpl;
+import bufferManager.BufferView;
+import table.Table;
+import table.TableImpl;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.nio.Buffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -14,47 +20,36 @@ import java.util.concurrent.ExecutionException;
 public class BufferManagerTester {
 
     private static final String TEST_DB_NAME = "db_test";
-    private static final int META_PAGES_COUNT = 19009;
-    private static final int NEW_SETS_COUNT = 12;
-    private static final int SETS_PAGES_COUNT = 32078;
+    private static final int COUNT = 1000;
+    private static final int RECORD_SIZE = 49;
 
     public static void main(String[] args) throws IOException, ExecutionException {
         new File(TEST_DB_NAME).delete();
-        BufferManager bufferManager = new BufferManagerImpl(TEST_DB_NAME);
-        for (int i = 0; i < META_PAGES_COUNT; i++) {
-            ByteBuffer buffer = bufferManager.getPage(BufferManager.META_INFORMATION_SET_ID, i).getBuffer(false);
-            byte[] arr = buffer.array();
+        BufferManager bufferManager = new BufferManager(TEST_DB_NAME);
+        Table table = new TableImpl(bufferManager, BufferManager.METAINF_FIRST_PAGE, RECORD_SIZE);
 
-            for(int j = 0; j < arr.length; j++) {
-                arr[j] = (byte) j;
-            }
+        List<Integer> recordIds = new ArrayList<>(COUNT);
+        byte[] row = new byte[RECORD_SIZE];
+        for (int i = 0; i < COUNT; i ++) {
+            row[i % RECORD_SIZE] += 1;
+            recordIds.add(table.insert(row));
         }
-        for (int i = 0; i < NEW_SETS_COUNT; i++) {
-            int setId = bufferManager.createPageSet();
-            for(int j = 0; j < SETS_PAGES_COUNT; j++) {
-                ByteBuffer buffer = bufferManager.getPage(setId, j).getBuffer(false);
-                byte[] arr = buffer.array();
-
-                for(int k = 0; k < arr.length; k++) {
-                    arr[k] = (byte) 1;
+        Arrays.fill(row, (byte) 0);
+        for (int i = 0; i < COUNT; i ++) {
+            row[i % RECORD_SIZE] += 1;
+            BufferView rowView = table.get(recordIds.get(i));
+            for(int j = 0; j < row.length; j ++) {
+                if(row[j] != rowView.getByte(j)) {
+                    throw new RuntimeException();
                 }
             }
+            rowView.close();
         }
-        bufferManager.close();
-        bufferManager = null;
-        bufferManager = new BufferManagerImpl(TEST_DB_NAME);
-        for (int i = 0; i < META_PAGES_COUNT; i++) {
-            ByteBuffer buffer = bufferManager.getPage(BufferManager.META_INFORMATION_SET_ID, i).getBuffer(false);
-            byte[] arr = buffer.array();
-
-            for(int j = 0; j < arr.length; j++) {
-                assert arr[j] == (byte) j;
-            }
+        Collections.shuffle(recordIds);
+        for (int i = 0; i < COUNT; i ++) {
+            BufferView rowView = table.get(recordIds.get(i));
+            rowView.close();
         }
-        bufferManager.removePage(BufferManager.META_INFORMATION_SET_ID, 0);
-        bufferManager.removePage(BufferManager.META_INFORMATION_SET_ID, 2);
-        bufferManager.removePage(BufferManager.META_INFORMATION_SET_ID, META_PAGES_COUNT - 3);
-
-        bufferManager.close();
     }
+
 }
