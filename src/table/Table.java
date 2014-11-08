@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 public class Table implements Iterable<Map<String, AttributeValue>> {
     private final TableBase baseTable;
     private final int recordSize;
+
     private final Collection<Attribute> attributes;
 
     public Table(BufferManager bm, int firstPage, Collection<Attribute> attributes) {
@@ -43,7 +44,7 @@ public class Table implements Iterable<Map<String, AttributeValue>> {
         }
     }
 
-    public int insertRecord(Map<String, AttributeValue>record) throws ExecutionException {
+    public int insertRecord(Map<String, AttributeValue> record) throws ExecutionException {
         byte[] row = new byte[recordSize];
 
         int pos = 0;
@@ -96,5 +97,9 @@ public class Table implements Iterable<Map<String, AttributeValue>> {
                 baseIterator.remove();
             }
         };
+    }
+
+    public Collection<Attribute> getSchema() {
+        return attributes;
     }
 }

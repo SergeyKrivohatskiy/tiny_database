@@ -4,6 +4,7 @@ import queries.Attribute;
 import utils.Utils;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 /**
  * tiny_database
@@ -26,5 +27,18 @@ public class AttributeValue {
     public AttributeValue(int intValue) {
         this.type = Attribute.DataType.INTEGER;
         this.value = Utils.intToBytes(intValue);
+    }
+
+    @Override
+    public String toString() {
+        switch (type) {
+            case INTEGER:
+                return Integer.toString(Utils.bytesToInt(value));
+            case VARCHAR:
+                return Utils.bytesToString(value);
+            case CHAR:
+                return Utils.bytesToString(value);
+        }
+        throw new RuntimeException();
     }
 }

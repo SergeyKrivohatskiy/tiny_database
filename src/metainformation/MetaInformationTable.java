@@ -47,6 +47,7 @@ public class MetaInformationTable {
                 if(attributesCount == 0) {
                     return new Table(bufferManager, firstPage, attributes);
                 }
+                continue;
             }
             if(!name .equals(currName)) {
                 ignore = Utils.bytesToInt(row.get("p2").value);

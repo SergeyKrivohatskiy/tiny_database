@@ -133,4 +133,10 @@ public class BufferManager {
     public void onChanged(int bufferPos) {
         bufferChanged.set(bufferPos);
     }
+
+    public void flushBuffer() {
+        for(int i = bufferChanged.nextSetBit(0); i != -1; i = bufferChanged.nextSetBit(i + 1)) {
+            writePage(i);
+        }
+    }
 }
