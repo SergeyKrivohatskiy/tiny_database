@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Created by Sergey on 27.10.2014.
  */
-public class TableBase {
+public class TableBase implements Iterable<BufferView> {
     private final static int POINTERS_SIZE = 8;
     private final BufferManager bufferManager;
     private final int firstPage;
@@ -81,7 +81,7 @@ public class TableBase {
 
         boolean bitSetFull = true;
         for(int i = 0; i < recordsPerPage; i ++) {
-            if((bitSetView.getByte(recordPosition / 8) & (1 << (recordPosition % 8))) == 0) {
+            if((bitSetView.getByte(i / 8) >> (i % 8) & 1) == 0) {
                 bitSetFull = false;
                 break;
             }
@@ -139,6 +139,78 @@ public class TableBase {
     }
 
     public Iterator<BufferView> iterator() {
-        return null;
+        return new Iterator<BufferView>() {
+            private int curPageNotFull = firstNotFullPage;
+            private int curPageFull = firstFullPage;
+            private int recordPos = 0;
+            private BufferView value = getNextView();
+
+            private BufferView getNextView() {
+                BufferView pageView;
+                boolean found;
+                do {
+                    found = true;
+                    pageView = null;
+                    if(curPageNotFull != 0) {
+                        pageView = bufferManager.getPage(curPageNotFull);
+                    } else {
+                        if(curPageFull != 0) {
+                            pageView = bufferManager.getPage(curPageFull);
+                        }
+                    }
+                    if(pageView == null) {
+                        return null;
+                    }
+                    BufferView bitSetView = pageView.getSubView(POINTERS_SIZE, bitSetSize);
+                    while(recordPos != recordsPerPage) {
+                        if(((bitSetView.getByte(recordPos / 8) >> (recordPos % 8)) & 1) != 0) {
+                            break;
+                        }
+                        recordPos += 1;
+                    }
+                    if(recordPos == recordsPerPage) {
+                        found = false;
+                    }
+                    bitSetView.close();
+                    if(!found) {
+                        recordPos = 0;
+                        int newPage = pageView.getInt(4);
+                        if(curPageNotFull != 0) {
+                            curPageNotFull = newPage;
+                        } else {
+                            if(curPageFull != 0) {
+                                curPageFull = newPage;
+                            }
+                        }
+                        pageView.close();
+                    }
+                } while(!found);
+
+                BufferView recordView = pageView.getSubView(POINTERS_SIZE + bitSetSize + recordPos * recordSize, recordSize);
+                recordPos += 1;
+                pageView.close();
+                return recordView;
+            }
+
+            @Override
+            public boolean hasNext() {
+                return value != null;
+            }
+
+            @Override
+            public BufferView next() {
+                if(!hasNext()) {
+                    throw new IllegalStateException();
+                }
+                BufferView old = value;
+                value = getNextView();
+                return old;
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 }
