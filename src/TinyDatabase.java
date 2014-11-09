@@ -1,4 +1,5 @@
 import bufferManager.BufferManager;
+import cursors.NLJoinCursor;
 import cursors.RenameCursor;
 import cursors.WhereCursor;
 import metainformation.MetaInformationTable;
@@ -53,11 +54,18 @@ public class TinyDatabase {
         attrVals.put("Test int attr", new AttributeValue(123));
         printAll(new WhereCursor(table.iterator(), attrVals));
 
-        System.out.println("Executing rename 'Test int attr' to 'int attr'");
+        System.out.println("Executing select * with rename 'Test int attr' to 'int attr'");
         table = metaInf.loadTable("name");
         Map<String, String> renameRules = new HashMap<>();
         renameRules.put("Test int attr", "int attr");
         printAll(new RenameCursor(table.iterator(), renameRules));
+
+        System.out.println("Executing join by 'Test varchar attr' with rename " +
+                "'Test int attr' to 'int attr' in first table");
+        table = metaInf.loadTable("name");
+        Set<String> eqAttr = new HashSet<>();
+        eqAttr.add("Test varchar attr");
+        printAll(new NLJoinCursor(new RenameCursor(table.iterator(), renameRules), table, eqAttr));
 
         bufferManager.flushBuffer();
     }
