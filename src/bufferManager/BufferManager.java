@@ -102,7 +102,7 @@ public class BufferManager {
             int pageIndex = pagesLoaded[bufferPos];
             dbFile.seek(pageIndex * PAGE_SIZE);
             dbFile.write(buffer, (int) (bufferPos * PAGE_SIZE), (int) PAGE_SIZE);
-            bufferChanged.clear(currentPos);
+            bufferChanged.clear(bufferPos);
         } catch (IOException e) {
             throw new RuntimeException("IOException when writing page " + pagesLoaded[bufferPos] + " to " + bufferPos);
         }
