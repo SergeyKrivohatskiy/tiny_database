@@ -41,4 +41,24 @@ public class AttributeValue {
         }
         throw new RuntimeException();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AttributeValue that = (AttributeValue) o;
+
+        if (type != that.type) return false;
+        if (!Arrays.equals(value, that.value)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = type.hashCode();
+        result = 31 * result + Arrays.hashCode(value);
+        return result;
+    }
 }

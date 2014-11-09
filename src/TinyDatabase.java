@@ -1,4 +1,5 @@
 import bufferManager.BufferManager;
+import cursors.WhereCursor;
 import metainformation.MetaInformationTable;
 import queries.Attribute;
 import table.AttributeValue;
@@ -7,10 +8,7 @@ import utils.Utils;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -32,13 +30,51 @@ public class TinyDatabase {
 //            //execute query
 //        }
 
-        // WARNING: really bad sql syntax
-        // Executing create table ...
-        String tableName = "name";
+        System.out.println("Executing create table ...");
         Collection<Attribute> schema = new ArrayList<>();
         schema.add(new Attribute("Test int attr", Attribute.DataType.INTEGER));
         schema.add(new Attribute("Test varchar attr", Attribute.DataType.VARCHAR));
-        // check if table is already exists
+        createTable("name", schema);
+
+        System.out.println("Executing insert ('Test int attr'=123, 'Test varchar attr'='varchar value') into name");
+        Table table;
+        Map<String, AttributeValue> record = new HashMap<>();
+        record.put("Test int attr", new AttributeValue(123));
+        record.put("Test varchar attr", new AttributeValue("varchar value"));
+        insertRecord("name", record);
+
+        System.out.println("Executing insert ('Test int attr'=128, 'Test varchar attr'='varchar value2') into name");
+        record = new HashMap<>();
+        record.put("Test int attr", new AttributeValue(128));
+        record.put("Test varchar attr", new AttributeValue("varchar value2"));
+        insertRecord("name", record);
+
+        System.out.println("Executing select * from name");
+        table = metaInf.loadTable("name");
+        printAll(table.iterator());
+
+        System.out.println("Executing select * from name where 'Test int attr' = 123");
+        table = metaInf.loadTable("name");
+        Map<String, AttributeValue> attrVals = new HashMap<>();
+        attrVals.put("Test int attr", new AttributeValue(123));
+        printAll(new WhereCursor(table.iterator(), attrVals));
+
+        bufferManager.flushBuffer();
+    }
+
+    private static void printAll(Iterator<Map<String, AttributeValue>> cursor) {
+        while (cursor.hasNext()){
+            System.out.println(cursor.next());
+        }
+    }
+
+    private static void insertRecord(String tableName, Map<String, AttributeValue> record) throws ExecutionException {
+        Table table;
+        table = metaInf.loadTable(tableName);
+        table.insertRecord(record);
+    }
+
+    private static void createTable(String tableName, Collection<Attribute> schema) throws UnsupportedEncodingException, ExecutionException {
         Table table = metaInf.loadTable(tableName);
         if(table != null) {
             System.out.println("table is already exists");
@@ -46,43 +82,5 @@ public class TinyDatabase {
         } else {
             metaInf.createTable(tableName, schema);
         }
-
-        int COUNT = 1_000;
-        // TODO: find bug: not all inserts(5 are missing) are visible after restarting, is it only for first page?
-        // Executing insert ("Test int attr"=123, "Test varchar attr"="varchar value") into name x COUNT
-        table = metaInf.loadTable(tableName);
-        Map<String, AttributeValue> record = new HashMap<>();
-        record.put("Test int attr", new AttributeValue(123));
-        record.put("Test varchar attr", new AttributeValue("varchar value"));
-        for(int i = 0; i < COUNT; i ++) {
-            table.insertRecord(record);
-        }
-
-        // Executing insert ("Test int attr"=128, "Test varchar attr"="varchar value2") into name x COUNT
-        table = metaInf.loadTable(tableName);
-        record = new HashMap<>();
-        record.put("Test int attr", new AttributeValue(128));
-        record.put("Test varchar attr", new AttributeValue("varchar value2"));
-        for(int i = 0; i < COUNT; i ++) {
-            table.insertRecord(record);
-        }
-
-        // Executing select * from name where "Test int attr" = 123
-        table = metaInf.loadTable(tableName);
-
-        int count = 0, allCount = 0;
-        for(Map<String, AttributeValue> rec: table) {
-            AttributeValue intAttr = rec.get("Test int attr");
-            assert intAttr.type == Attribute.DataType.INTEGER;
-            if(Utils.bytesToInt(intAttr.value) == 123) {
-                //System.out.println(rec);
-                count ++;
-            }
-            allCount ++;
-        }
-        System.out.println(count);
-        System.out.println(allCount);
-
-        bufferManager.flushBuffer();
     }
 }
