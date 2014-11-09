@@ -24,12 +24,6 @@ public class TinyDatabase {
         bufferManager = new BufferManager(DB_FILENAME);
         metaInf = new MetaInformationTable(bufferManager);
 
-//        while(true) {
-//            //get query
-//
-//            //execute query
-//        }
-
         System.out.println("Executing create table ...");
         Collection<Attribute> schema = new ArrayList<>();
         schema.add(new Attribute("Test int attr", Attribute.DataType.INTEGER));
