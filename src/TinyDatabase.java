@@ -1,10 +1,10 @@
 import bufferManager.BufferManager;
+import cursors.RenameCursor;
 import cursors.WhereCursor;
 import metainformation.MetaInformationTable;
 import queries.Attribute;
 import table.AttributeValue;
 import table.Table;
-import utils.Utils;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
@@ -52,6 +52,12 @@ public class TinyDatabase {
         Map<String, AttributeValue> attrVals = new HashMap<>();
         attrVals.put("Test int attr", new AttributeValue(123));
         printAll(new WhereCursor(table.iterator(), attrVals));
+
+        System.out.println("Executing rename 'Test int attr' to 'int attr'");
+        table = metaInf.loadTable("name");
+        Map<String, String> renameRules = new HashMap<>();
+        renameRules.put("Test int attr", "int attr");
+        printAll(new RenameCursor(table.iterator(), renameRules));
 
         bufferManager.flushBuffer();
     }
