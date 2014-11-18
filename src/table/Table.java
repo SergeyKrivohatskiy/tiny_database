@@ -57,15 +57,15 @@ public class Table implements Iterable<Map<String, AttributeValue>> {
         return baseTable.insert(row);
     }
 
-    public Map<String, AttributeValue>getRecord(int recordId) throws ExecutionException {
+    public Map<String, AttributeValue> getRecord(int recordId) throws ExecutionException {
         try (BufferView recordView = baseTable.get(recordId)) {
             return getRecordFromView(recordView);
         }
     }
 
-    private Map<String, AttributeValue>getRecordFromView(BufferView recordView) {
+    private Map<String, AttributeValue> getRecordFromView(BufferView recordView) {
         int pos = 0;
-        Map<String, AttributeValue>record = new HashMap<>();
+        Map<String, AttributeValue> record = new HashMap<>();
         for(Attribute attr: attributes) {
             int len = getAttrSize(attr);
             byte[] attrValue = recordView.getBytes(pos, len);
