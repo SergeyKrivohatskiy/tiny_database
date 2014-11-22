@@ -1,7 +1,5 @@
 package cursors;
 
-import table.AttributeValue;
-
 import java.util.Iterator;
 import java.util.Map;
 
@@ -9,21 +7,21 @@ import java.util.Map;
  * tiny_database
  * Created by Sergey on 09.11.2014.
  */
-public class WhereCursor implements Iterator<Map<String, AttributeValue>> {
+public class WhereCursor implements Iterator<Object[]> {
 
-    private final Iterator<Map<String, AttributeValue>> baseCursor;
-    private final Map<String, AttributeValue> attrValues;
-    private Map<String, AttributeValue> value;
+    private final Iterator<Object[]> baseCursor;
+    private final Map<Integer, Object> attrValues;
+    private Object[] value;
 
-    public WhereCursor(Iterator<Map<String, AttributeValue>> baseCursor, Map<String, AttributeValue> attrValues) {
+    public WhereCursor(Iterator<Object[]> baseCursor, Map<Integer, Object> attrValues) {
         this.attrValues = attrValues;
         this.baseCursor = baseCursor;
         value = getValue();
     }
 
-    private Map<String, AttributeValue> getValue() {
+    private Object[] getValue() {
         while(baseCursor.hasNext()) {
-            Map<String, AttributeValue> val = baseCursor.next();
+        	Object[] val = baseCursor.next();
             if(check(val)) {
                 return val;
             }
@@ -31,9 +29,9 @@ public class WhereCursor implements Iterator<Map<String, AttributeValue>> {
         return null;
     }
 
-    private boolean check(Map<String, AttributeValue> val) {
-        for(Map.Entry<String, AttributeValue> attr: attrValues.entrySet()) {
-            if(!attr.getValue().equals(val.get(attr.getKey()))) {
+    private boolean check(Object[] val) {
+        for(Map.Entry<Integer, Object> attr: attrValues.entrySet()) {
+            if(!attr.getValue().equals(val[attr.getKey()])) {
                 return false;
             }
         }
@@ -46,8 +44,8 @@ public class WhereCursor implements Iterator<Map<String, AttributeValue>> {
     }
 
     @Override
-    public Map<String, AttributeValue> next() {
-        Map<String, AttributeValue> old = value;
+    public Object[] next() {
+    	Object[] old = value;
         value = getValue();
         return old;
     }
