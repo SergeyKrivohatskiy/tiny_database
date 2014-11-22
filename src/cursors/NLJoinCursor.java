@@ -1,33 +1,30 @@
 package cursors;
 
-import table.AttributeValue;
-
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+
+import expresion.Expresion;
 
 /**
  * tiny_database
  * Created by Sergey on 09.11.2014.
  */
-public class NLJoinCursor implements Iterator<Map<String, AttributeValue>> {
+public class NLJoinCursor implements Iterator<Object[]> {
 
-    private final Iterator<Map<String, AttributeValue>> firstCursor;
-    private Iterator<Map<String, AttributeValue>> secondCursor;
-    private final Iterable<Map<String, AttributeValue>> iterable;
-    private final Set<String> eqAttrs;
-    private Map<String, AttributeValue> value;
-    private Map<String, AttributeValue> firstVal;
+    private final Iterator<Object[]> firstCursor;
+    private Iterator<Object[]> secondCursor;
+    private final Iterable<Object[]> iterable;
+    private final Expresion eqAttrs;
+    private Object[] value;
+    private Object[] firstVal;
 
-    public NLJoinCursor(Iterator<Map<String, AttributeValue>> firstCursor, Iterable<Map<String, AttributeValue>> iterable, Set<String> eqAttrs) {
+    public NLJoinCursor(Iterator<Object[]> firstCursor, Iterable<Object[]> iterable, Expresion eqAttrs) {
         this.firstCursor = firstCursor;
         this.iterable = iterable;
         this.eqAttrs = eqAttrs;
         value = getValue();
     }
 
-    private Map<String, AttributeValue> getValue() {
+    private Object[] getValue() {
         while(true) {
             if (firstVal == null && !firstCursor.hasNext()) {
                 return null;
@@ -37,33 +34,20 @@ public class NLJoinCursor implements Iterator<Map<String, AttributeValue>> {
                 secondCursor = iterable.iterator();
             }
             while (secondCursor.hasNext()) {
-                Map<String, AttributeValue> secondVal = secondCursor.next();
-                if (check(firstVal, secondVal)) {
-                    return join(firstVal, secondVal);
+            	Object[] val = join(firstVal, secondCursor.next());
+                if (eqAttrs.check(val)) {
+                    return val;
                 }
             }
             firstVal = null;
         }
     }
 
-    private Map<String, AttributeValue> join(Map<String, AttributeValue> firstVal, Map<String, AttributeValue> secondVal) {
-        Map<String, AttributeValue> mapResult = new HashMap<>();
-        for (String key : firstVal.keySet()) {
-            mapResult.put(key, firstVal.get(key));
-        }
-        for (String key : secondVal.keySet()) {
-            mapResult.put(key, secondVal.get(key));
-        }
-        return mapResult;
-    }
-
-    private boolean check(Map<String, AttributeValue> val1, Map<String, AttributeValue> val2) {
-        for(String attrName: eqAttrs) {
-            if(!val1.get(attrName).equals(val2.get(attrName))) {
-                return false;
-            }
-        }
-        return true;
+    private Object[] join(Object[] firstVal, Object[] secondVal) {
+        Object[] result = new Object[firstVal.length + secondVal.length];
+        System.arraycopy(firstVal, 0, result, 0, firstVal.length);
+        System.arraycopy(secondVal, 0, result, firstVal.length, secondVal.length);
+		return result ;
     }
 
     @Override
@@ -72,8 +56,8 @@ public class NLJoinCursor implements Iterator<Map<String, AttributeValue>> {
     }
 
     @Override
-    public Map<String, AttributeValue> next() {
-        Map<String, AttributeValue> old = value;
+    public Object[] next() {
+    	Object[] old = value;
         value = getValue();
         return old;
     }

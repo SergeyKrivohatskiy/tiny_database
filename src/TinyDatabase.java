@@ -3,12 +3,12 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import cursors.NLJoinCursor;
 import cursors.WhereCursor;
+import expresion.Expresion;
 import metainformation.MetaInformationTable;
 import queries.Attribute;
 import table.Table;
@@ -47,32 +47,44 @@ public class TinyDatabase {
 
         System.out.println("Executing select * from name");
         table = metaInf.loadTable("name");
-        System.out.println(table.getSchema());
+        printSchema(table.getSchema());
         printAll(table.iterator());
 
         System.out.println("Executing select * from name where 'Test int attr' = 123");
         table = metaInf.loadTable("name");
-        Map<Integer, Object> attrVals = new HashMap<>();
-        attrVals.put(0, 123);
-        printAll(new WhereCursor(table.iterator(), attrVals));
+        printSchema(table.getSchema());
+        printAll(new WhereCursor(table.iterator(), new Expresion() {
+			@Override
+			public boolean check(Object[] row) {
+				return row[0].equals(123);
+			}
+		}));
 
-//        System.out.println("Executing select * with rename 'Test int attr' to 'int attr'");
-//        table = metaInf.loadTable("name");
-//        Map<String, String> renameRules = new HashMap<>();
-//        renameRules.put("Test int attr", "int attr");
-//        printAll(new RenameCursor(table.iterator(), renameRules));
-//
-//        System.out.println("Executing join by 'Test varchar attr' with rename " +
-//                "'Test int attr' to 'int attr' in first table");
-//        table = metaInf.loadTable("name");
-//        Set<String> eqAttr = new HashSet<>();
-//        eqAttr.add("Test varchar attr");
-//        printAll(new NLJoinCursor(new RenameCursor(table.iterator(), renameRules), table, eqAttr));
+        System.out.println("Executing join by 'Test varchar attr' with rename " +
+                "'Test int attr' to 'int attr' in first table");
+        table = metaInf.loadTable("name");
+        Collection<Attribute> newSchema = new ArrayList<Attribute>();
+        newSchema.addAll(table.getSchema());
+        newSchema.addAll(table.getSchema());
+        printSchema(newSchema);
+        printAll(new NLJoinCursor(table.iterator(), table, new Expresion() {
+			@Override
+			public boolean check(Object[] row) {
+				return row[0].equals(row[2]);
+			}
+		}));
 
         bufferManager.flushBuffer();
     }
 
-    private static void printAll(Iterator<Object[]> cursor) {
+    private static void printSchema(Collection<Attribute> schema) {
+    	for(Attribute attr: schema) {
+    		System.out.print("| " + attr.getAttributeName() + " ");
+    	}
+		System.out.println("|");
+	}
+
+	private static void printAll(Iterator<Object[]> cursor) {
         while (cursor.hasNext()){
             System.out.println(Arrays.toString(cursor.next()));
         }
@@ -88,7 +100,7 @@ public class TinyDatabase {
         Table table = metaInf.loadTable(tableName);
         if(table != null) {
             System.out.println("table is already exists");
-            System.out.println(table.getSchema());
+            printSchema(table.getSchema());
         } else {
             metaInf.createTable(tableName, schema);
         }
