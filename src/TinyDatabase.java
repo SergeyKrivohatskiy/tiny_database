@@ -29,8 +29,8 @@ public class TinyDatabase {
 
         System.out.println("Executing create table ...");
         Collection<Attribute> schema = new ArrayList<>();
-        schema.add(new Attribute("Test int attr", Attribute.DataType.INTEGER));
-        schema.add(new Attribute("Test varchar attr", Attribute.DataType.VARCHAR));
+        schema.add(new Attribute("Test int attr", Attribute.IntegerType.getInstance()));
+        schema.add(new Attribute("Test varchar attr", new Attribute.VarcharType(14)));
         createTable("name", schema);
 
         System.out.println("Executing insert ('Test int attr'=123, 'Test varchar attr'='varchar value') into name");

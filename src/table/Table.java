@@ -3,6 +3,9 @@ package table;
 import bufferManager.BufferManager;
 import bufferManager.BufferView;
 import queries.Attribute;
+import queries.Attribute.DataType;
+import queries.Attribute.IntegerType;
+import queries.Attribute.VarcharType;
 import utils.Utils;
 
 import java.io.UnsupportedEncodingException;
@@ -31,17 +34,14 @@ public class Table implements Iterable<Object[]> {
     }
 
     private int getAttrSize(Attribute attr) {
-        switch (attr.getDataType()) {
-            case INTEGER:
-                return 4;
-            case CHAR:
-                return 1;
-            case VARCHAR:
-                //TODO change
-                return 255;
-            default:
-                throw new RuntimeException("Unsupported attribute type");
+        if(attr.getDataType() instanceof IntegerType) {
+        	return 4;
         }
+        if(attr.getDataType() instanceof VarcharType) {
+        	VarcharType vcType = (VarcharType) attr.getDataType();
+        	return vcType.getLength();
+        }
+        throw new RuntimeException("Unsupported attribute type");
     }
 
     public int insertRecord(Object[] record) throws ExecutionException, UnsupportedEncodingException {
@@ -51,16 +51,7 @@ public class Table implements Iterable<Object[]> {
         int i = 0;
         for(Attribute attr: attributes) {
             byte[] attrValue;
-            switch (attr.getDataType()) {
-			case INTEGER:
-				attrValue = Utils.intToBytes((Integer)record[i]);
-				break;
-			case VARCHAR:
-				attrValue = Utils.stringToBytes((String)record[i], 255);
-				break;
-			default:
-				throw new RuntimeException();
-			}
+            attrValue = toByteArray(record[i], attr.getDataType());
             i += 1;
             System.arraycopy(attrValue, 0, row, pos, attrValue.length);
             pos += attrValue.length;
@@ -69,7 +60,18 @@ public class Table implements Iterable<Object[]> {
         return baseTable.insert(row);
     }
 
-    public Object[] getRecord(int recordId) throws ExecutionException {
+    private byte[] toByteArray(Object object, DataType dataType) throws UnsupportedEncodingException {
+        if(dataType instanceof IntegerType) {
+        	return Utils.intToBytes((Integer)object);
+        }
+        if(dataType instanceof VarcharType) {
+        	VarcharType vcType = (VarcharType) dataType;
+        	return Utils.stringToBytes((String)object, vcType.getLength());
+        }
+        throw new RuntimeException("Unsupported attribute type");
+	}
+
+	public Object[] getRecord(int recordId) throws ExecutionException {
         try (BufferView recordView = baseTable.get(recordId)) {
             return getRecordFromView(recordView);
         }
@@ -82,17 +84,7 @@ public class Table implements Iterable<Object[]> {
         for(Attribute attr: attributes) {
             int len = getAttrSize(attr);
             byte[] attrValue = recordView.getBytes(pos, len);
-            Object value = null;
-            switch (attr.getDataType()) {
-			case INTEGER:
-				value = new Integer(Utils.bytesToInt(attrValue));
-				break;
-			case VARCHAR:
-				value = Utils.bytesToString(attrValue);
-				break;
-			default:
-				throw new RuntimeException();
-			}
+            Object value = byteArrayToObject(attrValue, attr.getDataType());
             record[i] = value;
             i += 1;
             pos += len;
@@ -100,7 +92,17 @@ public class Table implements Iterable<Object[]> {
         return record;
     }
 
-    @Override
+    private Object byteArrayToObject(byte[] attrValue, DataType dataType) {
+        if(dataType instanceof IntegerType) {
+        	return Utils.bytesToInt(attrValue);
+        }
+        if(dataType instanceof VarcharType) {
+        	return Utils.bytesToString(attrValue);
+        }
+        throw new RuntimeException("Unsupported attribute type");
+	}
+
+	@Override
     public Iterator<Object[]> iterator() {
         return new Iterator<Object[]>() {
             private Iterator<BufferView> baseIterator = baseTable.iterator();

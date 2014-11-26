@@ -2,6 +2,9 @@ package metainformation;
 
 import bufferManager.BufferManager;
 import queries.Attribute;
+import queries.Attribute.DoubleType;
+import queries.Attribute.IntegerType;
+import queries.Attribute.VarcharType;
 import table.Table;
 
 import java.io.UnsupportedEncodingException;
@@ -15,9 +18,9 @@ import java.util.concurrent.ExecutionException;
 public class MetaInformationTable {
 
     private final static Collection<Attribute> META_TABLE_SCHEME =
-            Arrays.asList(new Attribute("", Attribute.DataType.VARCHAR),
-                    new Attribute("", Attribute.DataType.INTEGER),
-                    new Attribute("", Attribute.DataType.INTEGER));
+            Arrays.asList(new Attribute("", new Attribute.VarcharType(255)),
+                    new Attribute("", Attribute.IntegerType.getInstance()),
+                    new Attribute("", Attribute.IntegerType.getInstance()));
     private final BufferManager bufferManager;
     private final Table table;
 
@@ -40,7 +43,7 @@ public class MetaInformationTable {
             String currName = (String) row[0];
             if(attributes != null) {
                 attributesCount -= 1;
-                Attribute.DataType type = intToType((Integer)row[1]);
+                Attribute.DataType type = intsToType(row);
                 attributes.add(new Attribute(currName, type));
                 if(attributesCount == 0) {
                     return new Table(bufferManager, firstPage, attributes);
@@ -58,26 +61,31 @@ public class MetaInformationTable {
         return null;
     }
 
-    private Attribute.DataType intToType(int i) {
-        switch (i){
+    private Attribute.DataType intsToType(Object[] row) {
+        switch ((Integer)row[1]){
             case 1:
-                return Attribute.DataType.INTEGER;
+                return Attribute.IntegerType.getInstance();
             case 2:
-                return Attribute.DataType.CHAR;
+                return Attribute.DoubleType.getInstance();
             case 3:
-                return Attribute.DataType.VARCHAR;
+                return new Attribute.VarcharType((Integer) row[2]);
         }
         throw new RuntimeException();
     }
 
-    private int typeToInt(Attribute.DataType dataType) {
-        switch (dataType){
-            case INTEGER:
-                return 1;
-            case CHAR:
-                return 2;
-            case VARCHAR:
-                return 3;
+    private void typeToInt(Attribute.DataType dataType, Object[] record) {
+        if(dataType instanceof IntegerType) {
+        	record[1] = 1;
+        	return;
+        }
+        if(dataType instanceof DoubleType) {
+        	record[1] = 2;
+        	return;
+        }
+        if(dataType instanceof VarcharType) {
+        	record[1] = 3;
+        	record[2] = ((VarcharType) dataType).getLength();
+        	return;
         }
         throw new RuntimeException();
     }
@@ -91,8 +99,7 @@ public class MetaInformationTable {
         table.insertRecord(record);
         for(Attribute attr: schema) {
         	record[0] = attr.getAttributeName();
-            int p1 = typeToInt(attr.getDataType());
-            record[1] = new Integer(p1);
+            typeToInt(attr.getDataType(), record);
             table.insertRecord(record);
         }
         return new Table(bufferManager, firstPage, schema);
