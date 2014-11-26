@@ -30,8 +30,8 @@ public class TableTest {
         new File("db_test").delete();
         BufferManager bufferManager = new BufferManager("db_test");
         Collection<Attribute> attributes = new ArrayList<>();
-        attributes.add(new Attribute("Test int attr", Attribute.DataType.INTEGER));
-        attributes.add(new Attribute("Test varchar attr", Attribute.DataType.VARCHAR));
+        attributes.add(new Attribute("Test int attr", Attribute.IntegerType.getInstance()));
+        attributes.add(new Attribute("Test varchar attr", new Attribute.VarcharType(32)));
         Table table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, attributes);
         Object[] record = new Object[2];
         record[0] = 123454;

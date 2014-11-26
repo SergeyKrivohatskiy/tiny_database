@@ -21,7 +21,7 @@ public class MetaInfTest {
         BufferManager bufferManager = new BufferManager("db_test");
         MetaInformationTable meta = new MetaInformationTable(bufferManager);
 
-        Table testTable = meta.createTable("testTable", Arrays.asList(new Attribute("testAttr", Attribute.DataType.VARCHAR)));
+        Table testTable = meta.createTable("testTable", Arrays.asList(new Attribute("testAttr", new Attribute.VarcharType(123))));
 
         Object[] record = new Object[1];
         record[0] = "testValue";
