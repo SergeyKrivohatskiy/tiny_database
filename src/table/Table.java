@@ -3,18 +3,18 @@ package table;
 import bufferManager.BufferManager;
 import bufferManager.BufferView;
 import queries.Attribute;
+import utils.Utils;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
  * tiny_database
  * Created by Sergey on 08.11.2014.
  */
-public class Table implements Iterable<Map<String, AttributeValue>> {
+public class Table implements Iterable<Object[]> {
     private final TableBase baseTable;
     private final int recordSize;
 
@@ -44,12 +44,24 @@ public class Table implements Iterable<Map<String, AttributeValue>> {
         }
     }
 
-    public int insertRecord(Map<String, AttributeValue> record) throws ExecutionException {
+    public int insertRecord(Object[] record) throws ExecutionException, UnsupportedEncodingException {
         byte[] row = new byte[recordSize];
 
         int pos = 0;
+        int i = 0;
         for(Attribute attr: attributes) {
-            byte[] attrValue = record.get(attr.getAttributeName()).value;
+            byte[] attrValue;
+            switch (attr.getDataType()) {
+			case INTEGER:
+				attrValue = Utils.intToBytes((Integer)record[i]);
+				break;
+			case VARCHAR:
+				attrValue = Utils.stringToBytes((String)record[i], 255);
+				break;
+			default:
+				throw new RuntimeException();
+			}
+            i += 1;
             System.arraycopy(attrValue, 0, row, pos, attrValue.length);
             pos += attrValue.length;
         }
@@ -57,27 +69,40 @@ public class Table implements Iterable<Map<String, AttributeValue>> {
         return baseTable.insert(row);
     }
 
-    public Map<String, AttributeValue> getRecord(int recordId) throws ExecutionException {
+    public Object[] getRecord(int recordId) throws ExecutionException {
         try (BufferView recordView = baseTable.get(recordId)) {
             return getRecordFromView(recordView);
         }
     }
 
-    private Map<String, AttributeValue> getRecordFromView(BufferView recordView) {
+    private Object[] getRecordFromView(BufferView recordView) {
         int pos = 0;
-        Map<String, AttributeValue> record = new HashMap<>();
+        Object[] record = new Object[attributes.size()];
+        int i = 0;
         for(Attribute attr: attributes) {
             int len = getAttrSize(attr);
             byte[] attrValue = recordView.getBytes(pos, len);
-            record.put(attr.getAttributeName(), new AttributeValue(attr.getDataType(), attrValue));
+            Object value = null;
+            switch (attr.getDataType()) {
+			case INTEGER:
+				value = new Integer(Utils.bytesToInt(attrValue));
+				break;
+			case VARCHAR:
+				value = Utils.bytesToString(attrValue);
+				break;
+			default:
+				throw new RuntimeException();
+			}
+            record[i] = value;
+            i += 1;
             pos += len;
         }
         return record;
     }
 
     @Override
-    public Iterator<Map<String, AttributeValue>> iterator() {
-        return new Iterator<Map<String, AttributeValue>>() {
+    public Iterator<Object[]> iterator() {
+        return new Iterator<Object[]>() {
             private Iterator<BufferView> baseIterator = baseTable.iterator();
 
             @Override
@@ -86,7 +111,7 @@ public class Table implements Iterable<Map<String, AttributeValue>> {
             }
 
             @Override
-            public Map<String, AttributeValue>next() {
+            public Object[] next() {
                 try(BufferView recordView = baseIterator.next()) {
                     return getRecordFromView(recordView);
                 }

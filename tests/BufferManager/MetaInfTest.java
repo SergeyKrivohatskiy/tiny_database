@@ -1,19 +1,15 @@
 package BufferManager;
 
-import bufferManager.BufferManager;
-import metainformation.MetaInformationTable;
-import queries.Attribute;
-import table.AttributeValue;
-import table.Table;
-import utils.Utils;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
+import metainformation.MetaInformationTable;
+import queries.Attribute;
+import table.Table;
+import bufferManager.BufferManager;
 
 /**
  * tiny_database
@@ -27,14 +23,14 @@ public class MetaInfTest {
 
         Table testTable = meta.createTable("testTable", Arrays.asList(new Attribute("testAttr", Attribute.DataType.VARCHAR)));
 
-        Map<String, AttributeValue> record = new HashMap<String, AttributeValue>();
-        record.put("testAttr", new AttributeValue("testValue"));
+        Object[] record = new Object[1];
+        record[0] = "testValue";
         testTable.insertRecord(record);
 
         testTable = meta.loadTable("testTable");
 
-        for(Map<String, AttributeValue> rec: testTable) {
-            if(!Utils.bytesToString(rec.get("testAttr").value).equals("testValue")) {
+        for(Object[] rec: testTable) {
+            if(!rec[0].equals("testValue")) {
                 throw new RuntimeException();
             }
         }

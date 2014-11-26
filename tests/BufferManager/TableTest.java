@@ -3,10 +3,8 @@ package BufferManager;
 import bufferManager.BufferManager;
 import bufferManager.BufferView;
 import queries.Attribute;
-import table.AttributeValue;
 import table.Table;
 import table.TableBase;
-import utils.Utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,39 +32,21 @@ public class TableTest {
         Collection<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("Test int attr", Attribute.DataType.INTEGER));
         attributes.add(new Attribute("Test varchar attr", Attribute.DataType.VARCHAR));
-        attributes.add(new Attribute("Test char attr", Attribute.DataType.CHAR));
         Table table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, attributes);
-        Map<String, AttributeValue> record = new HashMap<>();
-        record.put("Test int attr", new AttributeValue(123454));
-        record.put("Test varchar attr", new AttributeValue("value"));
-        byte[] c = new byte[1];
-        c[0] = 50;
-        record.put("Test char attr", new AttributeValue(Attribute.DataType.CHAR, c));
+        Object[] record = new Object[2];
+        record[0] = 123454;
+        record[1] = "value";
         for (int i = 0; i < COUNT; i ++) {
             table.insertRecord(record);
         }
         int i = 0;
-        for(Map<String, AttributeValue> rec: table) {
-            for(AttributeValue val: rec.values()) {
-                switch (val.type) {
-                    case INTEGER:
-                        if(Utils.bytesToInt(val.value) != 123454) {
-                            throw new RuntimeException();
-                        }
-                        break;
-                    case CHAR:
-                        if(!Arrays.equals(val.value, c)) {
-                            throw new RuntimeException();
-                        }
-                        break;
-                    case VARCHAR:
-                        String attr = Utils.bytesToString(val.value);
-                        if(!"value".equals(attr)) {
-                            throw new RuntimeException();
-                        }
-                        break;
-                }
-            }
+        for(Object[] rec: table) {
+			if ((Integer)rec[0] != 123454) {
+				throw new RuntimeException();
+			}
+			if (!"value".equals(rec[1])) {
+				throw new RuntimeException();
+			}
             i++;
         }
         if(i != COUNT) {

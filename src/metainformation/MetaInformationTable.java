@@ -2,9 +2,7 @@ package metainformation;
 
 import bufferManager.BufferManager;
 import queries.Attribute;
-import table.AttributeValue;
 import table.Table;
-import utils.Utils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -17,9 +15,9 @@ import java.util.concurrent.ExecutionException;
 public class MetaInformationTable {
 
     private final static Collection<Attribute> META_TABLE_SCHEME =
-            Arrays.asList(new Attribute("name", Attribute.DataType.VARCHAR),
-                    new Attribute("p1", Attribute.DataType.INTEGER),
-                    new Attribute("p2", Attribute.DataType.INTEGER));
+            Arrays.asList(new Attribute("", Attribute.DataType.VARCHAR),
+                    new Attribute("", Attribute.DataType.INTEGER),
+                    new Attribute("", Attribute.DataType.INTEGER));
     private final BufferManager bufferManager;
     private final Table table;
 
@@ -34,15 +32,15 @@ public class MetaInformationTable {
         int attributesCount = 0;
         int firstPage = 0;
         Collection<Attribute> attributes = null;
-        for(Map<String, AttributeValue> row: table) {
+        for(Object[] row: table) {
             if(ignore != 0) {
                 ignore -= 1;
                 continue;
             }
-            String currName = Utils.bytesToString(row.get("name").value);
+            String currName = (String) row[0];
             if(attributes != null) {
                 attributesCount -= 1;
-                Attribute.DataType type = intToType(Utils.bytesToInt(row.get("p1").value));
+                Attribute.DataType type = intToType((Integer)row[1]);
                 attributes.add(new Attribute(currName, type));
                 if(attributesCount == 0) {
                     return new Table(bufferManager, firstPage, attributes);
@@ -50,12 +48,12 @@ public class MetaInformationTable {
                 continue;
             }
             if(!name .equals(currName)) {
-                ignore = Utils.bytesToInt(row.get("p2").value);
+                ignore = (Integer)row[2];
                 continue;
             }
             attributes = new ArrayList<>();
-            attributesCount = Utils.bytesToInt(row.get("p2").value);
-            firstPage = Utils.bytesToInt(row.get("p1").value);
+            attributesCount = (Integer)row[2];
+            firstPage = (Integer)row[1];
         }
         return null;
     }
@@ -86,15 +84,15 @@ public class MetaInformationTable {
 
     public Table createTable(String name, Collection<Attribute> schema) throws UnsupportedEncodingException, ExecutionException {
         int firstPage = bufferManager.getFreePage();
-        Map<String, AttributeValue> record = new HashMap<>();
-        record.put("name", new AttributeValue(Attribute.DataType.VARCHAR, Utils.stringToBytes(name, 255)));
-        record.put("p1", new AttributeValue(Attribute.DataType.INTEGER, Utils.intToBytes(firstPage)));
-        record.put("p2", new AttributeValue(Attribute.DataType.INTEGER, Utils.intToBytes(schema.size())));
+        Object[] record = new Object[3];
+        record[0] = name;
+        record[1] = new Integer(firstPage);
+        record[2] = new Integer(schema.size());
         table.insertRecord(record);
         for(Attribute attr: schema) {
-            record.put("name", new AttributeValue(Attribute.DataType.VARCHAR, Utils.stringToBytes(attr.getAttributeName(), 255)));
+        	record[0] = attr.getAttributeName();
             int p1 = typeToInt(attr.getDataType());
-            record.put("p1", new AttributeValue(Attribute.DataType.INTEGER, Utils.intToBytes(p1)));
+            record[1] = new Integer(p1);
             table.insertRecord(record);
         }
         return new Table(bufferManager, firstPage, schema);
