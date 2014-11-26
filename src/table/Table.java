@@ -4,6 +4,7 @@ import bufferManager.BufferManager;
 import bufferManager.BufferView;
 import queries.Attribute;
 import queries.Attribute.DataType;
+import queries.Attribute.DoubleType;
 import queries.Attribute.IntegerType;
 import queries.Attribute.VarcharType;
 import utils.Utils;
@@ -37,6 +38,9 @@ public class Table implements Iterable<Object[]> {
         if(attr.getDataType() instanceof IntegerType) {
         	return 4;
         }
+        if(attr.getDataType() instanceof DoubleType) {
+        	return 8;
+        }
         if(attr.getDataType() instanceof VarcharType) {
         	VarcharType vcType = (VarcharType) attr.getDataType();
         	return vcType.getLength();
@@ -63,6 +67,9 @@ public class Table implements Iterable<Object[]> {
     private byte[] toByteArray(Object object, DataType dataType) throws UnsupportedEncodingException {
         if(dataType instanceof IntegerType) {
         	return Utils.intToBytes((Integer)object);
+        }
+        if(dataType instanceof DoubleType) {
+        	return Utils.doubleToBytes((Double)object);
         }
         if(dataType instanceof VarcharType) {
         	VarcharType vcType = (VarcharType) dataType;
@@ -95,6 +102,9 @@ public class Table implements Iterable<Object[]> {
     private Object byteArrayToObject(byte[] attrValue, DataType dataType) {
         if(dataType instanceof IntegerType) {
         	return Utils.bytesToInt(attrValue);
+        }
+        if(dataType instanceof DoubleType) {
+        	return Utils.bytesToDouble(attrValue);
         }
         if(dataType instanceof VarcharType) {
         	return Utils.bytesToString(attrValue);

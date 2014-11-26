@@ -42,4 +42,14 @@ public class Utils {
             throw new RuntimeException();
         }
     }
+    
+    public static byte[] doubleToBytes(double d) {
+    	byte[] bytes = new byte[8];
+    	ByteBuffer.wrap(bytes).putDouble(d);
+    	return bytes;
+    }
+    
+    public static Double bytesToDouble(byte[] bytes) {
+    	return ByteBuffer.wrap(bytes).getDouble();
+    }
 }
