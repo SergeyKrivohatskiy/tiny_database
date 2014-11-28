@@ -9,6 +9,7 @@ package grammar;
 
 import java.util.*;
 import queries.*;
+import expressions.*;
 }
 
 @members {
@@ -34,6 +35,12 @@ query returns [IQuery result]
     }
     ) | (   selectFrom {
         $result = $selectFrom.result;
+    }
+    ) | (   insertInto {
+        $result = $insertInto.result;
+    }
+    ) | (   deleteFrom {
+        $result = $deleteFrom.result;
     }
     ) ) SEMICOLON
     ;
@@ -67,10 +74,10 @@ dataType returns [Attribute.DataType result]
     $result = null;
 }
     :   INTEGER_TYPE {
-        $result = new Attribute.IntegerType();
+        $result = Attribute.IntegerType.getInstance();
     }
     |   DOUBLE_TYPE {
-        $result = new Attribute.DoubleType();
+        $result = Attribute.DoubleType.getInstance();
     }
     |   varCharType {
         $result = new Attribute.VarcharType($varCharType.length);
@@ -79,30 +86,50 @@ dataType returns [Attribute.DataType result]
 
 varCharType returns [int length]
     :   VAR_CHAR_TYPE LEFT_PARENTHESIS integerLiteral RIGHT_PARENTHESIS {
-        $length = $integerLiteral.value;
+        $length = $integerLiteral.intValue;
     }
     ;
 
-integerLiteral returns [int value]
+value returns [Object attrValue]
+    :   integerLiteral {
+        $attrValue = $integerLiteral.intValue;
+    }
+    |   doubleLiteral {
+        $attrValue = $doubleLiteral.doubleValue;
+    }
+    |   varCharLiteral {
+        $attrValue = $varCharLiteral.stringValue;
+    }
+    ;
+
+integerLiteral returns [Integer intValue]
     :   SIGN? DECIMAL_DIGIT+ {
-        $value = Integer.valueOf($text);
+        $intValue = new Integer($text);
     }
     ;
 
-doubleLiteral returns [double value]
+doubleLiteral returns [Double doubleValue]
     :   SIGN? DECIMAL_DIGIT+ DECIMAL_POINT DECIMAL_DIGIT*
     |   SIGN? DECIMAL_POINT? DECIMAL_DIGIT+ {
-        $value = Double.valueOf($text);
+        $doubleValue = new Double($text);
     }
     ;
 
-firstLevelId
+varCharLiteral returns [String stringValue]
+    :   QUOTES (~QUOTES)* QUOTES {
+        $stringValue = $text.replaceAll("\"", "");
+    }
+    ;
+
+firstLevelId returns [String id]
     :   ( UNDERLINE idSuffix
     ) | ( (
             LOWER_CASE
         |   UPPER_CASE
         ) idSuffix?
-    )
+    ) {
+        $id = $text;
+    }
     ;
 
 idSuffix
@@ -115,16 +142,63 @@ idSuffix
     ;
 
 selectFrom returns [SelectFromQuery result]
-    :   SELECT filter FROM table
+    :   SELECT filter FROM table whereFilter {
+        $result = new SelectFromQuery($table.text, $filter.result, $whereFilter.result);
+    }
     ;
 
-filter
-    :   ASTERISC
-    |   firstLevelId (COMMA firstLevelId)*
+insertInto returns [InsertIntoQuery result]
+@init {
+    List<String> attributes = new ArrayList<>();
+    List<Object> values = new ArrayList<>();
+}
+    :   INSERT INTO TABLE LEFT_PARENTHESIS firstLevelId {
+        attributes.add($firstLevelId.text);
+    }
+    ( COMMA firstLevelId {
+        attributes.add($firstLevelId.text);
+    }
+    )* RIGHT_PARENTHESIS VALUES LEFT_PARENTHESIS value {
+        values.add($value.attrValue);
+    }
+    ( COMMA value {
+        values.add($value.attrValue);
+    }
+    )* RIGHT_PARENTHESIS {
+        $result = new InsertIntoQuery(attributes, values);
+    }
+    ;
+
+deleteFrom returns [DeleteFromQuery result]
+    :   DELETE FROM TABLE whereFilter {
+        $result = new DeleteFromQuery($whereFilter.result);
+    }
+    ;
+
+filter returns [List<String> result]
+    :   ASTERISC {
+        $result = null;
+    }
+    |   firstLevelId {
+        $result = new ArrayList<>();
+        $result.add($firstLevelId.text);
+    } (COMMA firstLevelId {
+        $result.add($firstLevelId.text);
+    } )*
+    ;
+
+whereFilter returns [WhereFilter result]
+    :   WHERE expression {
+        $result = new WhereFilter($expression.text);
+    }
     ;
 
 table
     :   firstLevelId (join)*
+    ;
+
+expression // TODO
+    :   EQUALS
     ;
 
 join
@@ -137,6 +211,84 @@ joinStatement
 
 secondLevelId
     :   firstLevelId ~WHITE_SPACE DOT ~WHITE_SPACE firstLevelId
+    ;
+
+booleanExpression returns [BooleanExpression result]
+@init {
+    OrExpression first = null;
+    OrExpression second = null;
+}
+    :   orExpression {
+        first = $orExpression.result;
+    } (OR orExpression {
+        second = $orExpression.result;
+    } )? {
+        $result = new BooleanExpression(first, second);
+    }
+    ;
+
+orExpression returns [OrExpression result]
+@init {
+    AndExpression first = null;
+    AndExpression second = null;
+}
+    :   andExpression {
+        first = $andExpression.result;
+    } (AND andExpression {
+        second = $andExpression.result;
+    } )? {
+        $result = new OrExpression(first, second);
+    }
+    ;
+
+andExpression returns [AndExpression result]
+@init {
+   boolean negate = false;
+}
+    :   ( NOT {
+        negate = true;
+    }
+    )? booleanFactor {
+        $result = new AndExpression($booleanFactor.result, negate);
+    }
+    ;
+
+booleanFactor returns [BooleanFactor result]
+    :   booleanLiteral {
+        $result = new BooleanFactor($booleanLiteral.result);
+    }
+    |   LEFT_PARENTHESIS booleanExpression RIGHT_PARENTHESIS {
+        $result = new BooleanFactor($booleanExpression.result);
+    }
+    ;
+
+booleanLiteral returns [BooleanLiteral result]
+    :   TRUE {
+        $result = BooleanLiteral.TrueBooleanLiteral.getInstance();
+    }
+    |   FALSE {
+        $result = BooleanLiteral.FalseBooleanLiteral.getInstance();
+    }
+    ;
+
+OR
+    :   'OR'
+    ;
+
+AND
+    :   'AND'
+    ;
+
+NOT
+    :   'NOT'
+    ;
+
+TRUE
+    :   'TRUE'
+    ;
+
+FALSE
+    :   'FALSE'
     ;
 
 INTEGER_TYPE
@@ -155,6 +307,22 @@ CREATE
     :   'CREATE'
     ;
 
+DELETE
+    :   'DELETE'
+    ;
+
+INSERT
+    :   'INSERT'
+    ;
+
+INTO
+    :   'INTO'
+    ;
+
+VALUES
+    :   'VALUES'
+    ;
+
 TABLE
     :   'TABLE'
     ;
@@ -165,6 +333,10 @@ SELECT
 
 FROM
     :   'FROM'
+    ;
+
+WHERE
+    :   'WHERE'
     ;
 
 INNER
@@ -237,4 +409,8 @@ DOT
 
 EQUALS
     :   '='
+    ;
+
+QUOTES
+    :   '"'
     ;

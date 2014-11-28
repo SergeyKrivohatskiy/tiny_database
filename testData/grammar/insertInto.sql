@@ -1,0 +1,1 @@
+INSERT INTO TABLE (id, name) VALUES (5, "Andy");
