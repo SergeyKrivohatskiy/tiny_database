@@ -1,8 +1,8 @@
 package cursors;
 
-import java.util.Iterator;
+import expression.Expression;
 
-import expresion.Expresion;
+import java.util.Iterator;
 
 /**
  * tiny_database
@@ -13,11 +13,11 @@ public class NLJoinCursor implements Iterator<Object[]> {
     private final Iterator<Object[]> firstCursor;
     private Iterator<Object[]> secondCursor;
     private final Iterable<Object[]> iterable;
-    private final Expresion eqAttrs;
+    private final Expression eqAttrs;
     private Object[] value;
     private Object[] firstVal;
 
-    public NLJoinCursor(Iterator<Object[]> firstCursor, Iterable<Object[]> iterable, Expresion eqAttrs) {
+    public NLJoinCursor(Iterator<Object[]> firstCursor, Iterable<Object[]> iterable, Expression eqAttrs) {
         this.firstCursor = firstCursor;
         this.iterable = iterable;
         this.eqAttrs = eqAttrs;

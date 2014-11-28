@@ -1,8 +1,8 @@
 package cursors;
 
-import java.util.Iterator;
+import expression.Expression;
 
-import expresion.Expresion;
+import java.util.Iterator;
 
 /**
  * tiny_database
@@ -11,11 +11,11 @@ import expresion.Expresion;
 public class WhereCursor implements Iterator<Object[]> {
 
     private final Iterator<Object[]> baseCursor;
-    private final Expresion expresion;
+    private final Expression expression;
     private Object[] value;
 
-    public WhereCursor(Iterator<Object[]> baseCursor, Expresion expresion) {
-        this.expresion = expresion;
+    public WhereCursor(Iterator<Object[]> baseCursor, Expression expression) {
+        this.expression = expression;
         this.baseCursor = baseCursor;
         value = getValue();
     }
@@ -23,7 +23,7 @@ public class WhereCursor implements Iterator<Object[]> {
     private Object[] getValue() {
         while(baseCursor.hasNext()) {
         	Object[] val = baseCursor.next();
-            if(expresion.check(val)) {
+            if (expression.check(val)) {
                 return val;
             }
         }
