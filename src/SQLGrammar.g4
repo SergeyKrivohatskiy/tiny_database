@@ -9,7 +9,8 @@ package grammar;
 
 import java.util.*;
 import queries.*;
-import expressions.*;
+import expressions.bool.*;
+import expressions.comparison.*;
 }
 
 @members {
@@ -202,7 +203,7 @@ join
     ;
 
 joinStatement
-    :   secondLevelId EQUALS secondLevelId
+    :   secondLevelId EQUAL secondLevelId
     ;
 
 secondLevelId returns [SecondLevelId result]
@@ -263,6 +264,9 @@ booleanFactor returns [BooleanFactor result]
     |   LEFT_PARENTHESIS booleanExpression RIGHT_PARENTHESIS {
         $result = new BooleanFactor($booleanExpression.result);
     }
+    |   comparisonExpression {
+        $result = new BooleanFactor($comparisonExpression.result);
+    }
     ;
 
 booleanLiteral returns [BooleanLiteral result]
@@ -272,6 +276,165 @@ booleanLiteral returns [BooleanLiteral result]
     |   FALSE {
         $result = BooleanLiteral.FalseBooleanLiteral.getInstance();
     }
+    ;
+
+comparisonExpression returns [ComparisonExpression result]
+    :   equalExpression {
+        $result = $equalExpression.result;
+    }
+    |   notEqualExpression {
+        $result = $notEqualExpression.result;
+    }
+    |   lessExpression {
+        $result = $lessExpression.result;
+    }
+    |   lessOrEqualExpression {
+        $result = $lessOrEqualExpression.result;
+    }
+    |   greaterExpression {
+        $result = $greaterExpression.result;
+    }
+    |   greaterOrEqualExpression {
+        $result = $greaterOrEqualExpression.result;
+    }
+    ;
+
+equalExpression returns [EqualExpression result]
+@init {
+    SecondLevelId id = null;
+    Object value = null;
+}
+    :   ( secondLevelId EQUAL value {
+        id = $secondLevelId.result;
+        value = $value.result;
+    }
+    |   value EQUAL secondLevelId {
+        id = $secondLevelId.result;
+        value = $value.result;
+    } ) {
+        if (value instanceof Integer) {
+            $result = new EqualExpression<Integer>(id, (Integer) value);
+        } else if (value instanceof Double) {
+            $result = new EqualExpression<Double>(id, (Double) value);
+        } else {
+            $result = new EqualExpression<String>(id, (String) value);
+        }
+    }
+    ;
+
+notEqualExpression returns [NotEqualExpression result]
+@init {
+    SecondLevelId id = null;
+    Object value = null;
+}
+    :   ( secondLevelId NOT_EQUAL value {
+        id = $secondLevelId.result;
+        value = $value.result;
+    }
+    |   value NOT_EQUAL secondLevelId {
+        id = $secondLevelId.result;
+        value = $value.result;
+    } ) {
+        if (value instanceof Integer) {
+            $result = new NotEqualExpression<Integer>(id, (Integer) value);
+        } else if (value instanceof Double) {
+            $result = new NotEqualExpression<Double>(id, (Double) value);
+        } else {
+            $result = new NotEqualExpression<String>(id, (String) value);
+        }
+    }
+    ;
+
+lessExpression returns [LessExpression result]
+@init {
+    SecondLevelId id = null;
+    Object value = null;
+}
+    :   ( secondLevelId LESS value {
+        id = $secondLevelId.result;
+        value = $value.result;
+    }
+    |   value GREATER secondLevelId {
+        id = $secondLevelId.result;
+        value = $value.result;
+    } ) {
+        if (value instanceof Integer) {
+            $result = new LessExpression<Integer>(id, (Integer) value);
+        } else if (value instanceof Double) {
+            $result = new LessExpression<Double>(id, (Double) value);
+        } else {
+            $result = new LessExpression<String>(id, (String) value);
+        }
+    }
+    ;
+
+lessOrEqualExpression returns [LessOrEqualExpression result]
+@init {
+    SecondLevelId id = null;
+    Object value = null;
+}
+    :   ( secondLevelId LESS_OR_EQUAL value {
+        id = $secondLevelId.result;
+        value = $value.result;
+    }
+    |   value GREATER_OR_EQUAL secondLevelId {
+        id = $secondLevelId.result;
+        value = $value.result;
+    } ) {
+        if (value instanceof Integer) {
+            $result = new LessOrEqualExpression<Integer>(id, (Integer) value);
+        } else if (value instanceof Double) {
+            $result = new LessOrEqualExpression<Double>(id, (Double) value);
+        } else {
+            $result = new LessOrEqualExpression<String>(id, (String) value);
+        }
+    }
+    ;
+
+greaterExpression returns [GreaterExpression result]
+@init {
+    SecondLevelId id = null;
+    Object value = null;
+}
+    :   ( secondLevelId GREATER value {
+        id = $secondLevelId.result;
+        value = $value.result;
+    }
+    |   value LESS secondLevelId {
+        id = $secondLevelId.result;
+        value = $value.result;
+    } ) {
+        if (value instanceof Integer) {
+            $result = new GreaterExpression<Integer>(id, (Integer) value);
+        } else if (value instanceof Double) {
+            $result = new GreaterExpression<Double>(id, (Double) value);
+        } else {
+            $result = new GreaterExpression<String>(id, (String) value);
+        }
+    }
+    ;
+
+greaterOrEqualExpression returns [GreaterOrEqualExpression result]
+@init {
+    SecondLevelId id = null;
+    Object value = null;
+}
+    :   ( secondLevelId GREATER_OR_EQUAL value {
+        id = $secondLevelId.result;
+        value = $value.result;
+    }
+    |   value LESS_OR_EQUAL secondLevelId {
+        id = $secondLevelId.result;
+        value = $value.result;
+    } ) {
+          if (value instanceof Integer) {
+              $result = new GreaterOrEqualExpression<Integer>(id, (Integer) value);
+          } else if (value instanceof Double) {
+              $result = new GreaterOrEqualExpression<Double>(id, (Double) value);
+          } else {
+              $result = new GreaterOrEqualExpression<String>(id, (String) value);
+          }
+      }
     ;
 
 OR
@@ -410,8 +573,28 @@ DOT
     :   '.'
     ;
 
-EQUALS
+EQUAL
     :   '='
+    ;
+
+NOT_EQUAL
+    :   '!='
+    ;
+
+LESS
+    :   '<'
+    ;
+
+LESS_OR_EQUAL
+    :   '<='
+    ;
+
+GREATER
+    :   '>'
+    ;
+
+GREATER_OR_EQUAL
+    :   '>='
     ;
 
 QUOTES
