@@ -1,5 +1,7 @@
 package expressions;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * @author adkozlov
  */
@@ -12,6 +14,7 @@ public abstract class BooleanLiteral implements Expression<Boolean> {
         private TrueBooleanLiteral() {
         }
 
+        @NotNull
         public static TrueBooleanLiteral getInstance() {
             return INSTANCE;
         }
@@ -19,6 +22,12 @@ public abstract class BooleanLiteral implements Expression<Boolean> {
         @Override
         public Boolean execute() {
             return true;
+        }
+
+        @NotNull
+        @Override
+        public String toString() {
+            return "TRUE";
         }
     }
 
@@ -29,6 +38,7 @@ public abstract class BooleanLiteral implements Expression<Boolean> {
         private FalseBooleanLiteral() {
         }
 
+        @NotNull
         public static FalseBooleanLiteral getInstance() {
             return INSTANCE;
         }
@@ -36,6 +46,12 @@ public abstract class BooleanLiteral implements Expression<Boolean> {
         @Override
         public Boolean execute() {
             return false;
+        }
+
+        @NotNull
+        @Override
+        public String toString() {
+            return "FALSE";
         }
     }
 }

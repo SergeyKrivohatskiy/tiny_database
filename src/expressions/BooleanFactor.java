@@ -13,6 +13,6 @@ public class BooleanFactor extends AbstractBooleanExpression<Expression<Boolean>
 
     @Override
     public Boolean execute() {
-        return null;
+        return getFirst().execute();
     }
 }

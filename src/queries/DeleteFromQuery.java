@@ -8,9 +8,9 @@ import org.jetbrains.annotations.NotNull;
 public class DeleteFromQuery implements IQuery {
 
     @NotNull
-    private final WhereFilter filter;
+    private final WhereCondition filter;
 
-    public DeleteFromQuery(@NotNull WhereFilter filter) {
+    public DeleteFromQuery(@NotNull WhereCondition filter) {
         this.filter = filter;
     }
 

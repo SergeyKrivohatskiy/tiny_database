@@ -15,9 +15,9 @@ public class SelectFromQuery implements IQuery {
     @Nullable
     private final List<String> attributes;
     @Nullable
-    private final WhereFilter filter;
+    private final WhereCondition filter;
 
-    public SelectFromQuery(@NotNull String tableName, @Nullable List<String> attributes, @Nullable WhereFilter filter) {
+    public SelectFromQuery(@NotNull String tableName, @Nullable List<String> attributes, @Nullable WhereCondition filter) {
         this.tableName = tableName;
         this.attributes = attributes;
         this.filter = filter;

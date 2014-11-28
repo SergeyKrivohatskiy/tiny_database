@@ -13,10 +13,12 @@ public class OrExpression extends BinaryBooleanExpression<AndExpression> {
     }
 
     @Override
-    public Boolean execute() {
-        boolean firstValue = getFirst().execute();
-        AndExpression second = getSecond();
+    protected Boolean executeBinaryOperation(@NotNull Boolean first, @NotNull Boolean second) {
+        return first && second;
+    }
 
-        return second != null ? firstValue && second.execute() : firstValue;
+    @Override
+    protected String binaryOperationToString() {
+        return " AND ";
     }
 }

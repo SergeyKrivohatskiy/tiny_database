@@ -13,10 +13,12 @@ public class BooleanExpression extends BinaryBooleanExpression<OrExpression> {
     }
 
     @Override
-    public Boolean execute() {
-        boolean firstValue = getFirst().execute();
-        OrExpression second = getSecond();
+    protected Boolean executeBinaryOperation(@NotNull Boolean first, @NotNull Boolean second) {
+        return first || second;
+    }
 
-        return second != null ? firstValue || second.execute() : firstValue;
+    @Override
+    protected String binaryOperationToString() {
+        return " OR ";
     }
 }

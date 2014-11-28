@@ -18,4 +18,10 @@ public abstract class AbstractBooleanExpression<V extends Expression<Boolean>> i
     public V getFirst() {
         return first;
     }
+
+    @NotNull
+    @Override
+    public String toString() {
+        return getFirst().toString();
+    }
 }

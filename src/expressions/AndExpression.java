@@ -17,6 +17,14 @@ public class AndExpression extends AbstractBooleanExpression<BooleanFactor> {
     @Override
     public Boolean execute() {
         boolean result = getFirst().execute();
+
         return !negate ? result : !result;
+    }
+
+    @Override
+    public String toString() {
+        String result = getFirst().toString();
+
+        return !negate ? result : "NOT " + result;
     }
 }

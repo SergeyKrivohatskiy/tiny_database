@@ -50,7 +50,7 @@ createTable returns [CreateTableQuery result]
     List<Attribute> attributes = new ArrayList<>();
 }
     :   CREATE TABLE firstLevelId LEFT_PARENTHESIS attribute {
-        $result = new CreateTableQuery($firstLevelId.text, attributes);
+        $result = new CreateTableQuery($firstLevelId.result, attributes);
         attributes.add($attribute.result);
     }
     (
@@ -65,7 +65,7 @@ createTable returns [CreateTableQuery result]
 
 attribute returns [Attribute result]
     :   firstLevelId dataType {
-        $result = new Attribute($firstLevelId.text, $dataType.result);
+        $result = new Attribute($firstLevelId.result, $dataType.result);
     }
     ;
 
@@ -86,49 +86,49 @@ dataType returns [Attribute.DataType result]
 
 varCharType returns [int length]
     :   VAR_CHAR_TYPE LEFT_PARENTHESIS integerLiteral RIGHT_PARENTHESIS {
-        $length = $integerLiteral.intValue;
+        $length = $integerLiteral.result;
     }
     ;
 
-value returns [Object attrValue]
+value returns [Object result]
     :   integerLiteral {
-        $attrValue = $integerLiteral.intValue;
+        $result = $integerLiteral.result;
     }
     |   doubleLiteral {
-        $attrValue = $doubleLiteral.doubleValue;
+        $result = $doubleLiteral.result;
     }
     |   varCharLiteral {
-        $attrValue = $varCharLiteral.stringValue;
+        $result = $varCharLiteral.result;
     }
     ;
 
-integerLiteral returns [Integer intValue]
+integerLiteral returns [Integer result]
     :   SIGN? DECIMAL_DIGIT+ {
-        $intValue = new Integer($text);
+        $result = new Integer($text);
     }
     ;
 
-doubleLiteral returns [Double doubleValue]
-    :   SIGN? DECIMAL_DIGIT+ DECIMAL_POINT DECIMAL_DIGIT*
-    |   SIGN? DECIMAL_POINT? DECIMAL_DIGIT+ {
-        $doubleValue = new Double($text);
+doubleLiteral returns [Double result]
+    :   ( SIGN? DECIMAL_DIGIT+ DECIMAL_POINT DECIMAL_DIGIT*
+    |   SIGN? DECIMAL_POINT? DECIMAL_DIGIT+ ) {
+        $result = new Double($text);
     }
     ;
 
-varCharLiteral returns [String stringValue]
+varCharLiteral returns [String result]
     :   QUOTES (~QUOTES)* QUOTES {
-        $stringValue = $text.replaceAll("\"", "");
+        $result = $text.replaceAll("\"", "");
     }
     ;
 
-firstLevelId returns [String id]
-    :   ( UNDERLINE idSuffix
+firstLevelId returns [String result]
+    :   ( ( UNDERLINE idSuffix
     ) | ( (
             LOWER_CASE
         |   UPPER_CASE
         ) idSuffix?
-    ) {
-        $id = $text;
+    ) ) {
+        $result = $text;
     }
     ;
 
@@ -142,8 +142,8 @@ idSuffix
     ;
 
 selectFrom returns [SelectFromQuery result]
-    :   SELECT filter FROM table whereFilter {
-        $result = new SelectFromQuery($table.text, $filter.result, $whereFilter.result);
+    :   SELECT filter FROM table whereCondition {
+        $result = new SelectFromQuery($table.text, $filter.result, $whereCondition.result);
     }
     ;
 
@@ -153,16 +153,16 @@ insertInto returns [InsertIntoQuery result]
     List<Object> values = new ArrayList<>();
 }
     :   INSERT INTO TABLE LEFT_PARENTHESIS firstLevelId {
-        attributes.add($firstLevelId.text);
+        attributes.add($firstLevelId.result);
     }
     ( COMMA firstLevelId {
-        attributes.add($firstLevelId.text);
+        attributes.add($firstLevelId.result);
     }
     )* RIGHT_PARENTHESIS VALUES LEFT_PARENTHESIS value {
-        values.add($value.attrValue);
+        values.add($value.result);
     }
     ( COMMA value {
-        values.add($value.attrValue);
+        values.add($value.result);
     }
     )* RIGHT_PARENTHESIS {
         $result = new InsertIntoQuery(attributes, values);
@@ -170,8 +170,8 @@ insertInto returns [InsertIntoQuery result]
     ;
 
 deleteFrom returns [DeleteFromQuery result]
-    :   DELETE FROM TABLE whereFilter {
-        $result = new DeleteFromQuery($whereFilter.result);
+    :   DELETE FROM TABLE whereCondition {
+        $result = new DeleteFromQuery($whereCondition.result);
     }
     ;
 
@@ -181,24 +181,20 @@ filter returns [List<String> result]
     }
     |   firstLevelId {
         $result = new ArrayList<>();
-        $result.add($firstLevelId.text);
-    } (COMMA firstLevelId {
-        $result.add($firstLevelId.text);
+        $result.add($firstLevelId.result);
+    } ( COMMA firstLevelId {
+        $result.add($firstLevelId.result);
     } )*
     ;
 
-whereFilter returns [WhereFilter result]
-    :   WHERE expression {
-        $result = new WhereFilter($expression.text);
+whereCondition returns [WhereCondition result]
+    :   WHERE booleanExpression {
+        $result = new WhereCondition($booleanExpression.result);
     }
     ;
 
 table
     :   firstLevelId (join)*
-    ;
-
-expression // TODO
-    :   EQUALS
     ;
 
 join
@@ -220,7 +216,7 @@ booleanExpression returns [BooleanExpression result]
 }
     :   orExpression {
         first = $orExpression.result;
-    } (OR orExpression {
+    } ( OR orExpression {
         second = $orExpression.result;
     } )? {
         $result = new BooleanExpression(first, second);
@@ -234,7 +230,7 @@ orExpression returns [OrExpression result]
 }
     :   andExpression {
         first = $andExpression.result;
-    } (AND andExpression {
+    } ( AND andExpression {
         second = $andExpression.result;
     } )? {
         $result = new OrExpression(first, second);
