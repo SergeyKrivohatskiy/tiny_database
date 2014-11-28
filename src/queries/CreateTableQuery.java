@@ -2,6 +2,8 @@ package queries;
 
 import org.jetbrains.annotations.NotNull;
 
+import tinyDatabase.TinyDatabase;
+
 import java.util.List;
 
 /**
@@ -38,6 +40,12 @@ public class CreateTableQuery implements IQuery {
 
     @Override
     public void execute() {
-
+    	try {
+			TinyDatabase db = TinyDatabase.getInstance();
+			db.createTable(getId(), getAttributes());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 }

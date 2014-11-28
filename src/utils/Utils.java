@@ -3,6 +3,10 @@ package utils;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+
+import queries.Attribute;
 
 /**
  * tiny_database
@@ -51,5 +55,18 @@ public class Utils {
     
     public static Double bytesToDouble(byte[] bytes) {
     	return ByteBuffer.wrap(bytes).getDouble();
+    }
+
+    public static void printSchema(Collection<Attribute> schema) {
+    	for(Attribute attr: schema) {
+    		System.out.print("| " + attr.getAttributeName() + " ");
+    	}
+		System.out.println("|");
+	}
+
+    public static void printAll(Iterator<Object[]> cursor) {
+        while (cursor.hasNext()){
+            System.out.println(Arrays.toString(cursor.next()));
+        }
     }
 }
