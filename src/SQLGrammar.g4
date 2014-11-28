@@ -50,7 +50,7 @@ createTable returns [CreateTableQuery result]
     List<Attribute> attributes = new ArrayList<>();
 }
     :   CREATE TABLE firstLevelId LEFT_PARENTHESIS attribute {
-        $result = new CreateTableQuery($firstLevelId.result, attributes);
+        $result = new CreateTableQuery($firstLevelId.text, attributes);
         attributes.add($attribute.result);
     }
     (
@@ -65,7 +65,7 @@ createTable returns [CreateTableQuery result]
 
 attribute returns [Attribute result]
     :   firstLevelId dataType {
-        $result = new Attribute($firstLevelId.result, $dataType.result);
+        $result = new Attribute($firstLevelId.text, $dataType.result);
     }
     ;
 
@@ -121,14 +121,14 @@ varCharLiteral returns [String result]
     }
     ;
 
-firstLevelId returns [String result]
+firstLevelId returns [FirstLevelId result]
     :   ( ( UNDERLINE idSuffix
     ) | ( (
             LOWER_CASE
         |   UPPER_CASE
         ) idSuffix?
     ) ) {
-        $result = $text;
+        $result = new FirstLevelId($text);
     }
     ;
 
@@ -153,10 +153,10 @@ insertInto returns [InsertIntoQuery result]
     List<Object> values = new ArrayList<>();
 }
     :   INSERT INTO TABLE LEFT_PARENTHESIS firstLevelId {
-        attributes.add($firstLevelId.result);
+        attributes.add($firstLevelId.text);
     }
     ( COMMA firstLevelId {
-        attributes.add($firstLevelId.result);
+        attributes.add($firstLevelId.text);
     }
     )* RIGHT_PARENTHESIS VALUES LEFT_PARENTHESIS value {
         values.add($value.result);
@@ -181,9 +181,9 @@ filter returns [List<String> result]
     }
     |   firstLevelId {
         $result = new ArrayList<>();
-        $result.add($firstLevelId.result);
+        $result.add($firstLevelId.text);
     } ( COMMA firstLevelId {
-        $result.add($firstLevelId.result);
+        $result.add($firstLevelId.text);
     } )*
     ;
 
@@ -205,8 +205,15 @@ joinStatement
     :   secondLevelId EQUALS secondLevelId
     ;
 
-secondLevelId
-    :   firstLevelId ~WHITE_SPACE DOT ~WHITE_SPACE firstLevelId
+secondLevelId returns [SecondLevelId result]
+@init {
+    FirstLevelId tableName = null;
+}
+    :   firstLevelId DOT {
+        tableName = $firstLevelId.result;
+    } firstLevelId {
+        $result = new SecondLevelId(tableName, $firstLevelId.result);
+    }
     ;
 
 booleanExpression returns [BooleanExpression result]
