@@ -42,7 +42,11 @@ public class CreateTableQuery implements IQuery {
     public void execute() {
     	try {
 			TinyDatabase db = TinyDatabase.getInstance();
-			db.createTable(getId(), getAttributes());
+			if(db.createTable(getId(), getAttributes())) {
+				//table is created
+			} else {
+				//table is already exist
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
