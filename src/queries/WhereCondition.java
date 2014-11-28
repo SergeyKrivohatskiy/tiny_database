@@ -3,6 +3,8 @@ package queries;
 import expressions.BooleanExpression;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+
 /**
  * @author adkozlov
  */
@@ -13,6 +15,10 @@ public class WhereCondition {
 
     public WhereCondition(@NotNull BooleanExpression condition) {
         this.condition = condition;
+    }
+
+    public boolean check(Map<SecondLevelId, Object> values) {
+        return condition.execute(values);
     }
 
     @Override

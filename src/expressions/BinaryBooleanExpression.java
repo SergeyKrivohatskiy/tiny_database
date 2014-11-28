@@ -2,6 +2,9 @@ package expressions;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import queries.SecondLevelId;
+
+import java.util.Map;
 
 /**
  * @author adkozlov
@@ -21,13 +24,15 @@ public abstract class BinaryBooleanExpression<V extends Expression<Boolean>> ext
         return second;
     }
 
+    @NotNull
     @Override
-    public Boolean execute() {
-        Boolean firstValue = getFirst().execute();
+    public Boolean execute(@NotNull Map<SecondLevelId, Object> values) {
+        Boolean firstValue = getFirst().execute(values);
 
-        return getSecond() != null ? executeBinaryOperation(firstValue, getSecond().execute()) : firstValue;
+        return getSecond() != null ? executeBinaryOperation(firstValue, getSecond().execute(values)) : firstValue;
     }
 
+    @NotNull
     protected abstract Boolean executeBinaryOperation(@NotNull Boolean first, @NotNull Boolean second);
 
     @NotNull
@@ -38,5 +43,6 @@ public abstract class BinaryBooleanExpression<V extends Expression<Boolean>> ext
         return getSecond() != null ? "(" + result + binaryOperationToString() + getSecond().toString() + ")" : result;
     }
 
+    @NotNull
     protected abstract String binaryOperationToString();
 }

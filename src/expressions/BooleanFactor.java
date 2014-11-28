@@ -1,6 +1,9 @@
 package expressions;
 
 import org.jetbrains.annotations.NotNull;
+import queries.SecondLevelId;
+
+import java.util.Map;
 
 /**
  * @author adkozlov
@@ -11,8 +14,9 @@ public class BooleanFactor extends AbstractBooleanExpression<Expression<Boolean>
         super(first);
     }
 
+    @NotNull
     @Override
-    public Boolean execute() {
-        return getFirst().execute();
+    public Boolean execute(@NotNull Map<SecondLevelId, Object> values) {
+        return getFirst().execute(values);
     }
 }

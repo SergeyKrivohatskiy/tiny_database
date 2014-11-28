@@ -12,11 +12,13 @@ public class BooleanExpression extends BinaryBooleanExpression<OrExpression> {
         super(first, second);
     }
 
+    @NotNull
     @Override
     protected Boolean executeBinaryOperation(@NotNull Boolean first, @NotNull Boolean second) {
         return first || second;
     }
 
+    @NotNull
     @Override
     protected String binaryOperationToString() {
         return " OR ";

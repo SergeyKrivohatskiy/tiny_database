@@ -1,6 +1,9 @@
 package expressions;
 
 import org.jetbrains.annotations.NotNull;
+import queries.SecondLevelId;
+
+import java.util.Map;
 
 /**
  * @author adkozlov
@@ -14,13 +17,15 @@ public class AndExpression extends AbstractBooleanExpression<BooleanFactor> {
         this.negate = negate;
     }
 
+    @NotNull
     @Override
-    public Boolean execute() {
-        boolean result = getFirst().execute();
+    public Boolean execute(@NotNull Map<SecondLevelId, Object> values) {
+        boolean result = getFirst().execute(values);
 
         return !negate ? result : !result;
     }
 
+    @NotNull
     @Override
     public String toString() {
         String result = getFirst().toString();

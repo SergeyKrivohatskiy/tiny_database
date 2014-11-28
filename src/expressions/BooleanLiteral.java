@@ -1,6 +1,9 @@
 package expressions;
 
 import org.jetbrains.annotations.NotNull;
+import queries.SecondLevelId;
+
+import java.util.Map;
 
 /**
  * @author adkozlov
@@ -9,6 +12,7 @@ public abstract class BooleanLiteral implements Expression<Boolean> {
 
     public static class TrueBooleanLiteral extends BooleanLiteral {
 
+        @NotNull
         private static final TrueBooleanLiteral INSTANCE = new TrueBooleanLiteral();
 
         private TrueBooleanLiteral() {
@@ -19,8 +23,9 @@ public abstract class BooleanLiteral implements Expression<Boolean> {
             return INSTANCE;
         }
 
+        @NotNull
         @Override
-        public Boolean execute() {
+        public Boolean execute(@NotNull Map<SecondLevelId, Object> values) {
             return true;
         }
 
@@ -33,6 +38,7 @@ public abstract class BooleanLiteral implements Expression<Boolean> {
 
     public static class FalseBooleanLiteral extends BooleanLiteral {
 
+        @NotNull
         private static final FalseBooleanLiteral INSTANCE = new FalseBooleanLiteral();
 
         private FalseBooleanLiteral() {
@@ -43,8 +49,9 @@ public abstract class BooleanLiteral implements Expression<Boolean> {
             return INSTANCE;
         }
 
+        @NotNull
         @Override
-        public Boolean execute() {
+        public Boolean execute(@NotNull Map<SecondLevelId, Object> values) {
             return false;
         }
 

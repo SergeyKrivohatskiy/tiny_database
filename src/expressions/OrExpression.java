@@ -12,11 +12,13 @@ public class OrExpression extends BinaryBooleanExpression<AndExpression> {
         super(first, second);
     }
 
+    @NotNull
     @Override
     protected Boolean executeBinaryOperation(@NotNull Boolean first, @NotNull Boolean second) {
         return first && second;
     }
 
+    @NotNull
     @Override
     protected String binaryOperationToString() {
         return " AND ";
