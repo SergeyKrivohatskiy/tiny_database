@@ -17,12 +17,15 @@ public class BufferManager {
 
     private final RandomAccessFile dbFile;
     private final byte[] buffer = new byte[(int) (PAGE_SIZE * BUFFER_SIZE)];
-    private final BitSet bufferAvailability = new BitSet(BUFFER_SIZE);
-    private final BitSet bufferUsed = new BitSet(BUFFER_SIZE);
+    // 'i' page is used now if 'i' bit is set
+    private final BitSet bufferIsUsed = new BitSet(BUFFER_SIZE);
+    // 'i' page was recently used if 'i' bit is set
+    private final BitSet bufferWasUsed = new BitSet(BUFFER_SIZE);
+    // 'i' page should be written to disk if 'i' bit is set
     private final BitSet bufferChanged = new BitSet(BUFFER_SIZE);
     private final int[] usedPages = new int[BUFFER_SIZE];
     private final int[] pagesLoaded = new int[BUFFER_SIZE];
-    private int currentPos = 0;
+    private int currentPos = -1;
     private int length;
 
     public BufferManager(String dbFileName) throws FileNotFoundException {
@@ -71,24 +74,22 @@ public class BufferManager {
                 return new BufferView(buffer, i, (int) PAGE_SIZE, this);
             }
         }
-        int firstAvailable = bufferAvailability.nextClearBit(currentPos);
-        if(firstAvailable == BUFFER_SIZE) {
-            firstAvailable = bufferAvailability.nextClearBit(0);
+        
+        // Clock algorithm
+        while(true) {
+	        currentPos = bufferIsUsed.nextClearBit(currentPos + 1);
+	        if(currentPos == BUFFER_SIZE) {
+	        	currentPos = bufferIsUsed.nextClearBit(0);
+	        }
+	        if(currentPos == BUFFER_SIZE) {
+	            throw new RuntimeException("All buffer positions in use! Panic!");
+	        }
+	        if(bufferWasUsed.get(currentPos)) {
+	        	bufferWasUsed.clear(currentPos);
+	        } else {
+	        	break;
+	        }
         }
-        if(firstAvailable != BUFFER_SIZE) {
-            currentPos = firstAvailable;
-            loadPage(pageIndex, currentPos);
-            bufferAvailability.set(currentPos);
-            return new BufferView(buffer, currentPos, (int) PAGE_SIZE, this);
-        }
-        int notUsed = bufferUsed.nextClearBit(currentPos);
-        if(notUsed == BUFFER_SIZE) {
-            notUsed = bufferUsed.nextClearBit(0);
-        }
-        if(notUsed == BUFFER_SIZE) {
-            throw new RuntimeException("All buffer positions in use! Panic!");
-        }
-        currentPos = notUsed;
         if(bufferChanged.get(currentPos)) {
             writePage(currentPos);
         }
@@ -120,13 +121,14 @@ public class BufferManager {
 
     void onBufferViewCreated(int bufferPos) {
         usedPages[bufferPos] += 1;
-        bufferUsed.set(bufferPos);
+        bufferIsUsed.set(bufferPos);
+        bufferWasUsed.set(bufferPos);
     }
 
     void onBufferViewRemoved(int bufferPos) {
         usedPages[bufferPos] -= 1;
         if(usedPages[bufferPos] == 0) {
-            bufferUsed.clear(bufferPos);
+            bufferIsUsed.clear(bufferPos);
         }
     }
 
