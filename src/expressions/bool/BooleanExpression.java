@@ -1,4 +1,4 @@
-package expressions;
+package expressions.bool;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,7 +20,7 @@ public class BooleanExpression extends BinaryBooleanExpression<OrExpression> {
 
     @NotNull
     @Override
-    protected String binaryOperationToString() {
-        return " OR ";
+    public String operationToString() {
+        return "OR";
     }
 }

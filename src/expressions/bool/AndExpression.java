@@ -1,5 +1,6 @@
-package expressions;
+package expressions.bool;
 
+import expressions.PrintableOperation;
 import org.jetbrains.annotations.NotNull;
 import queries.SecondLevelId;
 
@@ -8,7 +9,7 @@ import java.util.Map;
 /**
  * @author adkozlov
  */
-public class AndExpression extends AbstractBooleanExpression<BooleanFactor> {
+public class AndExpression extends AbstractBooleanExpression<BooleanFactor> implements PrintableOperation {
 
     private final boolean negate;
 
@@ -30,6 +31,12 @@ public class AndExpression extends AbstractBooleanExpression<BooleanFactor> {
     public String toString() {
         String result = getFirst().toString();
 
-        return !negate ? result : "NOT " + result;
+        return !negate ? result : operationToString() + result;
+    }
+
+    @NotNull
+    @Override
+    public String operationToString() {
+        return "NOT ";
     }
 }

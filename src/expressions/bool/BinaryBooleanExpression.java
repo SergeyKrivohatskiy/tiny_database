@@ -1,5 +1,7 @@
-package expressions;
+package expressions.bool;
 
+import expressions.Expression;
+import expressions.PrintableOperation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import queries.SecondLevelId;
@@ -9,7 +11,7 @@ import java.util.Map;
 /**
  * @author adkozlov
  */
-public abstract class BinaryBooleanExpression<V extends Expression<Boolean>> extends AbstractBooleanExpression<V> {
+public abstract class BinaryBooleanExpression<V extends Expression<Boolean>> extends AbstractBooleanExpression<V> implements PrintableOperation {
 
     @Nullable
     private final V second;
@@ -40,9 +42,6 @@ public abstract class BinaryBooleanExpression<V extends Expression<Boolean>> ext
     public String toString() {
         String result = getFirst().toString();
 
-        return getSecond() != null ? "(" + result + binaryOperationToString() + getSecond().toString() + ")" : result;
+        return getSecond() != null ? "(" + result + " " + operationToString() + " " + getSecond().toString() + ")" : result;
     }
-
-    @NotNull
-    protected abstract String binaryOperationToString();
 }

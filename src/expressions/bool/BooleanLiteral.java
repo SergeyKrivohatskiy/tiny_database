@@ -1,5 +1,6 @@
-package expressions;
+package expressions.bool;
 
+import expressions.Expression;
 import org.jetbrains.annotations.NotNull;
 import queries.SecondLevelId;
 

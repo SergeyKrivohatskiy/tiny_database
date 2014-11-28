@@ -1,6 +1,6 @@
 package queries;
 
-import expressions.BooleanExpression;
+import expressions.bool.BooleanExpression;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
