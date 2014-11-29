@@ -5,12 +5,12 @@ options {
 }
 
 @header {
-    package grammar;
+    package ru.spbau.tinydb.grammar;
 
     import java.util.*;
-    import queries.*;
-    import expressions.bool.*;
-    import expressions.comparison.*;
+    import ru.spbau.tinydb.queries.*;
+    import ru.spbau.tinydb.expressions.bool.*;
+    import ru.spbau.tinydb.expressions.comparison.*;
 }
 
 @members {
@@ -21,7 +21,7 @@ script returns [List<IQuery> result]
 @init {
     $result = new ArrayList<>();
 }
-    :   (   query {
+    :   ( query {
         $result.add($query.result);
     }
     )+ EOF
@@ -31,7 +31,7 @@ query returns [IQuery result]
 @init {
     $result = null;
 }
-    :   ( (   createTable {
+    :   ( ( createTable {
         $result = $createTable.result;
     }
     ) | (   selectFrom {

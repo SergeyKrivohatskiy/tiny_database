@@ -1,15 +1,15 @@
 package BufferManager;
 
+import ru.spbau.tinydb.bufferManager.BufferManager;
+import ru.spbau.tinydb.metainformation.MetaInformationTable;
+import ru.spbau.tinydb.queries.Attribute;
+import table.Table;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
-
-import metainformation.MetaInformationTable;
-import queries.Attribute;
-import table.Table;
-import bufferManager.BufferManager;
 
 /**
  * tiny_database

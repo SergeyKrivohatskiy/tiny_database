@@ -2,6 +2,8 @@ package grammar;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import ru.spbau.tinydb.grammar.SQLGrammarLexer;
+import ru.spbau.tinydb.grammar.SQLGrammarParser;
 
 import java.io.FileInputStream;
 import java.io.IOException;

@@ -1,8 +1,8 @@
 package BufferManager;
 
-import bufferManager.BufferManager;
-import bufferManager.BufferView;
-import queries.Attribute;
+import ru.spbau.tinydb.bufferManager.BufferManager;
+import ru.spbau.tinydb.bufferManager.BufferView;
+import ru.spbau.tinydb.queries.Attribute;
 import table.Table;
 import table.TableBase;
 
@@ -10,7 +10,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 
 /**

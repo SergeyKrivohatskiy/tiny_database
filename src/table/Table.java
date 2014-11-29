@@ -1,13 +1,13 @@
 package table;
 
-import bufferManager.BufferManager;
-import bufferManager.BufferView;
-import queries.Attribute;
-import queries.Attribute.DataType;
-import queries.Attribute.DoubleType;
-import queries.Attribute.IntegerType;
-import queries.Attribute.VarcharType;
-import utils.Utils;
+import ru.spbau.tinydb.bufferManager.BufferManager;
+import ru.spbau.tinydb.bufferManager.BufferView;
+import ru.spbau.tinydb.queries.Attribute;
+import ru.spbau.tinydb.queries.Attribute.DataType;
+import ru.spbau.tinydb.queries.Attribute.DoubleType;
+import ru.spbau.tinydb.queries.Attribute.IntegerType;
+import ru.spbau.tinydb.queries.Attribute.VarcharType;
+import ru.spbau.tinydb.utils.Utils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;

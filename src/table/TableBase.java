@@ -1,7 +1,7 @@
 package table;
 
-import bufferManager.BufferManager;
-import bufferManager.BufferView;
+import ru.spbau.tinydb.bufferManager.BufferManager;
+import ru.spbau.tinydb.bufferManager.BufferView;
 
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
