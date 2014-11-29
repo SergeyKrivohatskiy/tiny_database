@@ -34,13 +34,13 @@ query returns [IQuery result]
     :   ( ( createTable {
         $result = $createTable.result;
     }
-    ) | (   selectFrom {
+    ) | ( selectFrom {
         $result = $selectFrom.result;
     }
-    ) | (   insertInto {
+    ) | ( insertInto {
         $result = $insertInto.result;
     }
-    ) | (   deleteFrom {
+    ) | ( deleteFrom {
         $result = $deleteFrom.result;
     }
     ) ) SEMICOLON
@@ -54,14 +54,10 @@ createTable returns [CreateTableQuery result]
         $result = new CreateTableQuery($firstLevelId.result, attributes);
         attributes.add($attribute.result);
     }
-    (
-        COMMA (
-            attribute {
-                attributes.add($attribute.result);
-            }
-        )
-    )*
-    RIGHT_PARENTHESIS
+    ( COMMA ( attribute {
+        attributes.add($attribute.result);
+    }
+    ) )* RIGHT_PARENTHESIS
     ;
 
 attribute returns [Attribute result]
@@ -146,10 +142,10 @@ selectFrom returns [SelectFromQuery result]
 @init {
     WhereCondition condition = null;
 }
-    :   SELECT filter FROM table ( whereCondition {
+    :   SELECT filter FROM selectionTable ( whereCondition {
         condition = $whereCondition.result;
     } )? {
-        $result = new SelectFromQuery($table.text, $filter.result, condition);
+        $result = new SelectFromQuery($selectionTable.result, $filter.result, condition);
     }
     ;
 
@@ -199,8 +195,32 @@ whereCondition returns [WhereCondition result]
     }
     ;
 
-table
-    :   firstLevelId ( INNER JOIN firstLevelId ON secondLevelId EQUAL secondLevelId )*
+selectionTable returns [SelectionTable result]
+@init {
+    String tableName = null;
+    List<JoinOnExpression> expressions = new ArrayList<>();
+}
+    :   firstLevelId {
+        tableName = $firstLevelId.result;
+    }
+    ( joinOnExpression {
+        expressions.add($joinOnExpression.result);
+    } )* {
+        $result = new SelectionTable(tableName, expressions);
+    }
+    ;
+
+joinOnExpression returns [JoinOnExpression result]
+@init {
+    String tableName = null;
+    SecondLevelId firstId = null;
+}
+    :   INNER JOIN firstLevelId ON secondLevelId EQUAL {
+        tableName = $firstLevelId.result;
+        firstId = $secondLevelId.result;
+    } secondLevelId {
+        $result = new JoinOnExpression(tableName, firstId, $secondLevelId.result);
+    }
     ;
 
 secondLevelId returns [SecondLevelId result]
