@@ -29,6 +29,7 @@ public class SelectFromQuery implements IQuery {
 
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "SelectFromQuery{" +

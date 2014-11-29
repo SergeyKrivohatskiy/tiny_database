@@ -25,6 +25,7 @@ public class InsertIntoQuery implements IQuery {
 
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "InsertIntoQuery{" +

@@ -30,6 +30,7 @@ public class CreateTableQuery implements IQuery {
         return attributes;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "CreateTableQuery{" +

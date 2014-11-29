@@ -19,6 +19,7 @@ public class DeleteFromQuery implements IQuery {
 
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "DeleteFromQuery{" +
