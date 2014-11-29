@@ -2,6 +2,7 @@ package ru.spbau.tinydb.queries;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ public class InsertIntoQuery implements IQuery {
 
     public InsertIntoQuery(@NotNull List<String> attributes, @NotNull List<Object> values) {
         this.attributes = attributes;
-        this.values = values;
+        this.values = Collections.unmodifiableList(values);
     }
 
     @Override

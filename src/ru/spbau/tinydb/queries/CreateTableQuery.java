@@ -3,6 +3,7 @@ package ru.spbau.tinydb.queries;
 import org.jetbrains.annotations.NotNull;
 import ru.spbau.tinydb.tinyDatabase.TinyDatabase;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -17,7 +18,7 @@ public class CreateTableQuery implements IQuery {
 
     public CreateTableQuery(@NotNull String id, @NotNull List<Attribute> attributes) {
         this.id = id;
-        this.attributes = attributes;
+        this.attributes = Collections.unmodifiableList(attributes);
     }
 
     @NotNull
@@ -41,8 +42,8 @@ public class CreateTableQuery implements IQuery {
     public void execute() {
     	try {
 			TinyDatabase db = TinyDatabase.getInstance();
-			if(db.createTable(getId(), getAttributes())) {
-				//table is created
+            if (db.createTable(getId(), getAttributes())) {
+                //table is created
 			} else {
 				//table is already exist
 			}

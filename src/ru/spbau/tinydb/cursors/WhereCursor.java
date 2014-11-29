@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.queries.WhereCondition;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -34,7 +35,7 @@ public class WhereCursor implements Iterator<Map<SecondLevelId, Object>> {
             Map<SecondLevelId, Object> values = baseCursor.next();
 
             if (condition.check(values)) {
-                return values;
+                return Collections.unmodifiableMap(values);
             }
         }
 

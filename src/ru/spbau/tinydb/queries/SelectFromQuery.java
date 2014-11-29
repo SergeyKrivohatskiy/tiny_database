@@ -3,6 +3,7 @@ package ru.spbau.tinydb.queries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,7 +20,7 @@ public class SelectFromQuery implements IQuery {
 
     public SelectFromQuery(@NotNull String tableName, @Nullable List<String> attributes, @Nullable WhereCondition filter) {
         this.tableName = tableName;
-        this.attributes = attributes;
+        this.attributes = Collections.unmodifiableList(attributes);
         this.filter = filter;
     }
 
