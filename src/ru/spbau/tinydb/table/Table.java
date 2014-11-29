@@ -1,4 +1,4 @@
-package table;
+package ru.spbau.tinydb.table;
 
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.bufferManager.BufferView;

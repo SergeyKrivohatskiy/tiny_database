@@ -3,7 +3,7 @@ package ru.spbau.tinydb.tinyDatabase;
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.metainformation.MetaInformationTable;
 import ru.spbau.tinydb.queries.Attribute;
-import table.Table;
+import ru.spbau.tinydb.table.Table;
 
 import java.io.Closeable;
 import java.io.IOException;

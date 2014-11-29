@@ -5,7 +5,7 @@ import ru.spbau.tinydb.queries.Attribute;
 import ru.spbau.tinydb.queries.Attribute.DoubleType;
 import ru.spbau.tinydb.queries.Attribute.IntegerType;
 import ru.spbau.tinydb.queries.Attribute.VarcharType;
-import table.Table;
+import ru.spbau.tinydb.table.Table;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
