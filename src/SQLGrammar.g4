@@ -1,16 +1,16 @@
 grammar SQLGrammar;
 
 options {
-language = Java;
+    language = Java;
 }
 
 @header {
-package grammar;
+    package grammar;
 
-import java.util.*;
-import queries.*;
-import expressions.bool.*;
-import expressions.comparison.*;
+    import java.util.*;
+    import queries.*;
+    import expressions.bool.*;
+    import expressions.comparison.*;
 }
 
 @members {
@@ -143,8 +143,13 @@ idSuffix
     ;
 
 selectFrom returns [SelectFromQuery result]
-    :   SELECT filter FROM table whereCondition {
-        $result = new SelectFromQuery($table.text, $filter.result, $whereCondition.result);
+@init {
+    WhereCondition condition = null;
+}
+    :   SELECT filter FROM table ( whereCondition {
+        condition = $whereCondition.result;
+    } )? {
+        $result = new SelectFromQuery($table.text, $filter.result, condition);
     }
     ;
 
@@ -195,15 +200,7 @@ whereCondition returns [WhereCondition result]
     ;
 
 table
-    :   firstLevelId (join)*
-    ;
-
-join
-    :   INNER JOIN firstLevelId ON joinStatement
-    ;
-
-joinStatement
-    :   secondLevelId EQUAL secondLevelId
+    :   firstLevelId ( INNER JOIN firstLevelId ON secondLevelId EQUAL secondLevelId )*
     ;
 
 secondLevelId returns [SecondLevelId result]
@@ -570,7 +567,7 @@ DECIMAL_POINT
     ;
 
 DOT
-    :   '.'
+    :   '->'
     ;
 
 EQUAL
