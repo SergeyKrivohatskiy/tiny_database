@@ -1,4 +1,4 @@
-package BufferManager;
+package bufferManager;
 
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.bufferManager.BufferView;
