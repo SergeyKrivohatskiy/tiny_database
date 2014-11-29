@@ -8,22 +8,22 @@ import org.jetbrains.annotations.NotNull;
 public class SecondLevelId {
 
     @NotNull
-    private final FirstLevelId tableName;
+    private final String tableName;
     @NotNull
-    private final FirstLevelId attributeName;
+    private final String attributeName;
 
-    public SecondLevelId(@NotNull FirstLevelId tableName, @NotNull FirstLevelId attributeName) {
+    public SecondLevelId(@NotNull String tableName, @NotNull String attributeName) {
         this.tableName = tableName;
         this.attributeName = attributeName;
     }
 
     @NotNull
-    public FirstLevelId getTableName() {
+    public String getTableName() {
         return tableName;
     }
 
     @NotNull
-    public FirstLevelId getAttributeName() {
+    public String getAttributeName() {
         return attributeName;
     }
 

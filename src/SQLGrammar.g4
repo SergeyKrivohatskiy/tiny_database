@@ -51,7 +51,7 @@ createTable returns [CreateTableQuery result]
     List<Attribute> attributes = new ArrayList<>();
 }
     :   CREATE TABLE firstLevelId LEFT_PARENTHESIS attribute {
-        $result = new CreateTableQuery($firstLevelId.text, attributes);
+        $result = new CreateTableQuery($firstLevelId.result, attributes);
         attributes.add($attribute.result);
     }
     (
@@ -66,7 +66,7 @@ createTable returns [CreateTableQuery result]
 
 attribute returns [Attribute result]
     :   firstLevelId dataType {
-        $result = new Attribute($firstLevelId.text, $dataType.result);
+        $result = new Attribute($firstLevelId.result, $dataType.result);
     }
     ;
 
@@ -122,14 +122,14 @@ varCharLiteral returns [String result]
     }
     ;
 
-firstLevelId returns [FirstLevelId result]
+firstLevelId returns [String result]
     :   ( ( UNDERLINE idSuffix
     ) | ( (
             LOWER_CASE
         |   UPPER_CASE
         ) idSuffix?
     ) ) {
-        $result = new FirstLevelId($text);
+        $result = $text;
     }
     ;
 
@@ -159,10 +159,10 @@ insertInto returns [InsertIntoQuery result]
     List<Object> values = new ArrayList<>();
 }
     :   INSERT INTO TABLE LEFT_PARENTHESIS firstLevelId {
-        attributes.add($firstLevelId.text);
+        attributes.add($firstLevelId.result);
     }
     ( COMMA firstLevelId {
-        attributes.add($firstLevelId.text);
+        attributes.add($firstLevelId.result);
     }
     )* RIGHT_PARENTHESIS VALUES LEFT_PARENTHESIS value {
         values.add($value.result);
@@ -187,9 +187,9 @@ filter returns [List<String> result]
     }
     |   firstLevelId {
         $result = new ArrayList<>();
-        $result.add($firstLevelId.text);
+        $result.add($firstLevelId.result);
     } ( COMMA firstLevelId {
-        $result.add($firstLevelId.text);
+        $result.add($firstLevelId.result);
     } )*
     ;
 
@@ -205,9 +205,9 @@ table
 
 secondLevelId returns [SecondLevelId result]
 @init {
-    FirstLevelId tableName = null;
+    String tableName = null;
 }
-    :   firstLevelId DOT {
+    :   firstLevelId ARROW {
         tableName = $firstLevelId.result;
     } firstLevelId {
         $result = new SecondLevelId(tableName, $firstLevelId.result);
@@ -566,7 +566,7 @@ DECIMAL_POINT
     :   '.'
     ;
 
-DOT
+ARROW
     :   '->'
     ;
 
