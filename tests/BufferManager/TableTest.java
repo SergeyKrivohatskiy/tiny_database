@@ -3,8 +3,8 @@ package bufferManager;
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.bufferManager.BufferView;
 import ru.spbau.tinydb.queries.Attribute;
-import table.Table;
-import table.TableBase;
+import ru.spbau.tinydb.table.Table;
+import ru.spbau.tinydb.table.TableBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
