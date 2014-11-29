@@ -7,30 +7,35 @@ import ru.spbau.tinydb.queries.Attribute.DataType;
 import ru.spbau.tinydb.queries.Attribute.DoubleType;
 import ru.spbau.tinydb.queries.Attribute.IntegerType;
 import ru.spbau.tinydb.queries.Attribute.VarcharType;
+import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.utils.Utils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
  * tiny_database
  * Created by Sergey on 08.11.2014.
  */
-public class Table implements Iterable<Object[]> {
+public class Table implements Iterable<Map<SecondLevelId, Object>> {
     private final TableBase baseTable;
     private final int recordSize;
 
     private final Collection<Attribute> attributes;
+	private final String tableName;
 
-    public Table(BufferManager bm, int firstPage, Collection<Attribute> attributes) {
+    public Table(BufferManager bm, int firstPage, Collection<Attribute> attributes, String name) {
         int recordSize = 0;
         for(Attribute attr: attributes) {
             recordSize += getAttrSize(attr);
         }
         this.recordSize = recordSize;
         this.attributes = attributes;
+        tableName = name;
         baseTable = new TableBase(bm, firstPage, recordSize);
     }
 
@@ -78,22 +83,20 @@ public class Table implements Iterable<Object[]> {
         throw new RuntimeException("Unsupported attribute type");
 	}
 
-	public Object[] getRecord(int recordId) throws ExecutionException {
+	public Map<SecondLevelId, Object> getRecord(int recordId) throws ExecutionException {
         try (BufferView recordView = baseTable.get(recordId)) {
             return getRecordFromView(recordView);
         }
     }
 
-    private Object[] getRecordFromView(BufferView recordView) {
+    private Map<SecondLevelId, Object> getRecordFromView(BufferView recordView) {
         int pos = 0;
-        Object[] record = new Object[attributes.size()];
-        int i = 0;
+        Map<SecondLevelId, Object> record = new HashMap<>();
         for(Attribute attr: attributes) {
             int len = getAttrSize(attr);
             byte[] attrValue = recordView.getBytes(pos, len);
             Object value = byteArrayToObject(attrValue, attr.getDataType());
-            record[i] = value;
-            i += 1;
+            record.put(new SecondLevelId(tableName, attr.getAttributeName()), value);
             pos += len;
         }
         return record;
@@ -113,8 +116,8 @@ public class Table implements Iterable<Object[]> {
 	}
 
 	@Override
-    public Iterator<Object[]> iterator() {
-        return new Iterator<Object[]>() {
+    public Iterator<Map<SecondLevelId, Object>> iterator() {
+        return new Iterator<Map<SecondLevelId, Object>>() {
             private Iterator<BufferView> baseIterator = baseTable.iterator();
 
             @Override
@@ -123,7 +126,7 @@ public class Table implements Iterable<Object[]> {
             }
 
             @Override
-            public Object[] next() {
+            public Map<SecondLevelId, Object> next() {
                 try(BufferView recordView = baseIterator.next()) {
                     return getRecordFromView(recordView);
                 }

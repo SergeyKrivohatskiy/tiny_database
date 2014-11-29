@@ -3,6 +3,7 @@ package ru.spbau.tinydb.tinyDatabase;
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.metainformation.MetaInformationTable;
 import ru.spbau.tinydb.queries.Attribute;
+import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.table.Table;
 
 import java.io.Closeable;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -34,7 +36,7 @@ public class TinyDatabase implements Closeable {
         metaInf = new MetaInformationTable(bufferManager);
     }
     
-    public Iterator<Object[]> selectAll() {
+    public Iterator<Map<SecondLevelId, Object>> selectAll() {
         Table table = metaInf.loadTable("name");
         return table.iterator();
     }
@@ -59,7 +61,7 @@ public class TinyDatabase implements Closeable {
         }
     }
 
-	private Collection<Attribute> getTableSchema(String tableName) {
+	public Collection<Attribute> getTableSchema(String tableName) {
 		return metaInf.loadTable(tableName).getSchema();
 	}
 

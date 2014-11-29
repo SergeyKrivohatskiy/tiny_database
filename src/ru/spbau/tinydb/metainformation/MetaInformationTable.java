@@ -5,12 +5,14 @@ import ru.spbau.tinydb.queries.Attribute;
 import ru.spbau.tinydb.queries.Attribute.DoubleType;
 import ru.spbau.tinydb.queries.Attribute.IntegerType;
 import ru.spbau.tinydb.queries.Attribute.VarcharType;
+import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.table.Table;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -20,16 +22,19 @@ import java.util.concurrent.ExecutionException;
 public class MetaInformationTable {
 
     private final static Collection<Attribute> META_TABLE_SCHEME =
-            Arrays.asList(new Attribute("", new Attribute.VarcharType(255)),
-                    new Attribute("", Attribute.IntegerType.getInstance()),
-                    new Attribute("", Attribute.IntegerType.getInstance()));
+            Arrays.asList(new Attribute("name", new Attribute.VarcharType(255)),
+                    new Attribute("val1", Attribute.IntegerType.getInstance()),
+                    new Attribute("val2", Attribute.IntegerType.getInstance()));
+    private final static SecondLevelId NAME_ID = new SecondLevelId("metainf", "name");
+    private final static SecondLevelId VAL1_ID = new SecondLevelId("metainf", "val1");
+    private final static SecondLevelId VAL2_ID = new SecondLevelId("metainf", "val2");
     private final BufferManager bufferManager;
     private final Table table;
 
 
     public MetaInformationTable(BufferManager bufferManager) {
         this.bufferManager = bufferManager;
-        table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, META_TABLE_SCHEME);
+        table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, META_TABLE_SCHEME, "metainf");
     }
 
     public Table loadTable(String name) {
@@ -37,40 +42,40 @@ public class MetaInformationTable {
         int attributesCount = 0;
         int firstPage = 0;
         Collection<Attribute> attributes = null;
-        for(Object[] row: table) {
+        for(Map<SecondLevelId, Object> row: table) {
             if(ignore != 0) {
                 ignore -= 1;
                 continue;
             }
-            String currName = (String) row[0];
+            String currName = (String) row.get(NAME_ID);
             if(attributes != null) {
                 attributesCount -= 1;
                 Attribute.DataType type = intsToType(row);
                 attributes.add(new Attribute(currName, type));
                 if(attributesCount == 0) {
-                    return new Table(bufferManager, firstPage, attributes);
+                    return new Table(bufferManager, firstPage, attributes, name);
                 }
                 continue;
             }
             if(!name .equals(currName)) {
-                ignore = (Integer)row[2];
+                ignore = (Integer)row.get(VAL2_ID);
                 continue;
             }
             attributes = new ArrayList<>();
-            attributesCount = (Integer)row[2];
-            firstPage = (Integer)row[1];
+            attributesCount = (Integer)row.get(VAL2_ID);
+            firstPage = (Integer)row.get(VAL1_ID);
         }
         return null;
     }
 
-    private Attribute.DataType intsToType(Object[] row) {
-        switch ((Integer)row[1]){
+    private Attribute.DataType intsToType(Map<SecondLevelId, Object> row) {
+        switch ((Integer)row.get(VAL1_ID)){
             case 1:
                 return Attribute.IntegerType.getInstance();
             case 2:
                 return Attribute.DoubleType.getInstance();
             case 3:
-                return new Attribute.VarcharType((Integer) row[2]);
+                return new Attribute.VarcharType((Integer) row.get(VAL2_ID));
         }
         throw new RuntimeException();
     }
@@ -104,6 +109,6 @@ public class MetaInformationTable {
             typeToInt(attr.getDataType(), record);
             table.insertRecord(record);
         }
-        return new Table(bufferManager, firstPage, schema);
+        return new Table(bufferManager, firstPage, schema, name);
     }
 }

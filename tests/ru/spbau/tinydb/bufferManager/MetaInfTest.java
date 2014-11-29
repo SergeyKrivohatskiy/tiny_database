@@ -1,14 +1,16 @@
-package bufferManager;
+package ru.spbau.tinydb.bufferManager;
 
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.metainformation.MetaInformationTable;
 import ru.spbau.tinydb.queries.Attribute;
-import table.Table;
+import ru.spbau.tinydb.queries.SecondLevelId;
+import ru.spbau.tinydb.table.Table;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -29,8 +31,8 @@ public class MetaInfTest {
 
         testTable = meta.loadTable("testTable");
 
-        for(Object[] rec: testTable) {
-            if(!rec[0].equals("testValue")) {
+        for(Map<SecondLevelId, Object> rec: testTable) {
+            if(!rec.get(new SecondLevelId("testTable", "testAttr")).equals("testValue")) {
                 throw new RuntimeException();
             }
         }

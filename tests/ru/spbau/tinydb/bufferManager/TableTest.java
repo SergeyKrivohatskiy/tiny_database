@@ -1,10 +1,11 @@
-package bufferManager;
+package ru.spbau.tinydb.bufferManager;
 
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.bufferManager.BufferView;
 import ru.spbau.tinydb.queries.Attribute;
-import table.Table;
-import table.TableBase;
+import ru.spbau.tinydb.queries.SecondLevelId;
+import ru.spbau.tinydb.table.Table;
+import ru.spbau.tinydb.table.TableBase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -33,7 +35,7 @@ public class TableTest {
         Collection<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("Test int attr", Attribute.IntegerType.getInstance()));
         attributes.add(new Attribute("Test varchar attr", new Attribute.VarcharType(32)));
-        Table table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, attributes);
+        Table table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, attributes, "name");
         Object[] record = new Object[2];
         record[0] = 123454;
         record[1] = "value";
@@ -41,11 +43,11 @@ public class TableTest {
             table.insertRecord(record);
         }
         int i = 0;
-        for(Object[] rec: table) {
-			if ((Integer)rec[0] != 123454) {
+        for(Map<SecondLevelId, Object> rec: table) {
+			if ((Integer)rec.get(new SecondLevelId("name", "Test int attr")) != 123454) {
 				throw new RuntimeException();
 			}
-			if (!"value".equals(rec[1])) {
+			if (!"value".equals(rec.get(new SecondLevelId("name", "Test varchar attr")))) {
 				throw new RuntimeException();
 			}
             i++;
