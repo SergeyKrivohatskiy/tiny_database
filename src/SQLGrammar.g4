@@ -54,13 +54,14 @@ createTable returns [CreateTableQuery result]
     List<Attribute> attributes = new ArrayList<>();
 }
     :   CREATE TABLE firstLevelId LEFT_PARENTHESIS attribute {
-        $result = new CreateTableQuery($firstLevelId.result, attributes);
         attributes.add($attribute.result);
     }
     ( COMMA ( attribute {
         attributes.add($attribute.result);
     }
-    ) )* RIGHT_PARENTHESIS
+    ) )* RIGHT_PARENTHESIS {
+        $result = new CreateTableQuery($firstLevelId.result, attributes);
+    }
     ;
 
 attribute returns [Attribute result]
@@ -171,7 +172,7 @@ createIndex returns [CreateIndexQuery result]
         isUsingHash = false;
     }
     ) | HASH ) {
-        $result = new CreateIndexQuery(indexName, tableName, attributeNames, isUnique, isAscending, isUsingHash);
+        $result = new CreateIndexQuery(tableName, indexName, attributeNames, isUnique, isAscending, isUsingHash);
     }
     ;
 
@@ -189,10 +190,13 @@ selectFrom returns [SelectFromQuery result]
 
 insertInto returns [InsertIntoQuery result]
 @init {
+    String tableName = null;
     List<String> attributes = new ArrayList<>();
     List<Object> values = new ArrayList<>();
 }
-    :   INSERT INTO TABLE LEFT_PARENTHESIS firstLevelId {
+    :   INSERT INTO firstLevelId LEFT_PARENTHESIS {
+        tableName = $firstLevelId.result;
+    }firstLevelId {
         attributes.add($firstLevelId.result);
     }
     ( COMMA firstLevelId {
@@ -205,13 +209,13 @@ insertInto returns [InsertIntoQuery result]
         values.add($value.result);
     }
     )* RIGHT_PARENTHESIS {
-        $result = new InsertIntoQuery(attributes, values);
+        $result = new InsertIntoQuery(tableName, attributes, values);
     }
     ;
 
 deleteFrom returns [DeleteFromQuery result]
-    :   DELETE FROM TABLE whereCondition {
-        $result = new DeleteFromQuery($whereCondition.result);
+    :   DELETE FROM firstLevelId whereCondition {
+        $result = new DeleteFromQuery($firstLevelId.result, $whereCondition.result);
     }
     ;
 

@@ -8,16 +8,27 @@ import java.util.List;
 /**
  * @author adkozlov
  */
-public class InsertIntoQuery implements IQuery {
+public class InsertIntoQuery extends TableNameContainer implements IQuery {
 
     @NotNull
     private final List<String> attributes;
     @NotNull
     private final List<Object> values;
 
-    public InsertIntoQuery(@NotNull List<String> attributes, @NotNull List<Object> values) {
-        this.attributes = attributes;
+    public InsertIntoQuery(@NotNull String tableName, @NotNull List<String> attributes, @NotNull List<Object> values) {
+        super(tableName);
+        this.attributes = Collections.unmodifiableList(attributes);
         this.values = Collections.unmodifiableList(values);
+    }
+
+    @NotNull
+    public List<String> getAttributes() {
+        return attributes;
+    }
+
+    @NotNull
+    public List<Object> getValues() {
+        return values;
     }
 
     @Override
@@ -31,6 +42,6 @@ public class InsertIntoQuery implements IQuery {
         return "InsertIntoQuery{" +
                 "attributes=" + attributes +
                 ", values=" + values +
-                '}';
+                "} " + super.toString();
     }
 }

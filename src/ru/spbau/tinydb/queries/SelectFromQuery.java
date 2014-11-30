@@ -21,7 +21,7 @@ public class SelectFromQuery implements IQuery {
 
     public SelectFromQuery(@NotNull SelectionTable table, @Nullable List<String> attributes, @Nullable WhereCondition filter) {
         this.table = table;
-        this.attributes = Collections.unmodifiableList(attributes != null ? attributes : new ArrayList<>());
+        this.attributes = Collections.unmodifiableList(attributes != null ? attributes : new ArrayList<String>());
         this.filter = filter;
     }
 

@@ -1,1 +1,1 @@
-DELETE FROM TABLE WHERE student->id < 5;
+DELETE FROM students WHERE student->id < 5;

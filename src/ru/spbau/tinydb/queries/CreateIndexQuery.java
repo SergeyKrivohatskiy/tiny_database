@@ -8,22 +8,20 @@ import java.util.List;
 /**
  * @author adkozlov
  */
-public class CreateIndexQuery implements IQuery {
+public class CreateIndexQuery extends TableNameContainer implements IQuery {
 
     @NotNull
     private final String indexName;
-    @NotNull
-    private final String tableName;
     @NotNull
     private final List<String> attributeNames;
     private final boolean isUnique;
     private final boolean isAscending;
     private final boolean isUsingHash;
 
-    public CreateIndexQuery(@NotNull String indexName, @NotNull String tableName, @NotNull List<String> attributeNames,
+    public CreateIndexQuery(@NotNull String tableName, @NotNull String indexName, @NotNull List<String> attributeNames,
                             boolean isUnique, boolean isAscending, boolean isUsingHash) {
+        super(tableName);
         this.indexName = indexName;
-        this.tableName = tableName;
         this.attributeNames = Collections.unmodifiableList(attributeNames);
         this.isUnique = isUnique;
         this.isAscending = isAscending;
@@ -33,11 +31,6 @@ public class CreateIndexQuery implements IQuery {
     @NotNull
     public String getIndexName() {
         return indexName;
-    }
-
-    @NotNull
-    public String getTableName() {
-        return tableName;
     }
 
     @NotNull
@@ -67,10 +60,10 @@ public class CreateIndexQuery implements IQuery {
     public String toString() {
         return "CreateIndexQuery{" +
                 "indexName='" + indexName + '\'' +
-                ", tableName='" + tableName + '\'' +
                 ", attributeNames=" + attributeNames +
+                ", isUnique=" + isUnique +
                 ", isAscending=" + isAscending +
                 ", isUsingHash=" + isUsingHash +
-                '}';
+                "} " + super.toString();
     }
 }

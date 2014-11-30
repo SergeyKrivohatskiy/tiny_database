@@ -5,21 +5,14 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author adkozlov
  */
-public class SecondLevelId {
+public class SecondLevelId extends TableNameContainer {
 
-    @NotNull
-    private final String tableName;
     @NotNull
     private final String attributeName;
 
     public SecondLevelId(@NotNull String tableName, @NotNull String attributeName) {
-        this.tableName = tableName;
+        super(tableName);
         this.attributeName = attributeName;
-    }
-
-    @NotNull
-    public String getTableName() {
-        return tableName;
     }
 
     @NotNull
@@ -30,24 +23,29 @@ public class SecondLevelId {
     @NotNull
     @Override
     public String toString() {
-        return tableName + "." + attributeName;
+        return getTableName() + "." + attributeName;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SecondLevelId)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof SecondLevelId)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
 
         SecondLevelId that = (SecondLevelId) o;
 
-        if (!attributeName.equals(that.attributeName)) return false;
-        return tableName.equals(that.tableName);
-
+        return attributeName.equals(that.attributeName);
     }
 
     @Override
     public int hashCode() {
-        int result = tableName.hashCode();
+        int result = super.hashCode();
         result = 31 * result + attributeName.hashCode();
         return result;
     }

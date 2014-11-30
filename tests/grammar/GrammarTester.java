@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import ru.spbau.tinydb.grammar.SQLGrammarLexer;
 import ru.spbau.tinydb.grammar.SQLGrammarParser;
+import ru.spbau.tinydb.queries.IQuery;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,7 +25,7 @@ public class GrammarTester {
     private static List<String> testsList(String directory) {
         List<String> result = new ArrayList<>();
 
-        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(directory))) {
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(directory), "*.sql")) {
             for (Path path : directoryStream) {
                 result.add(path.toString());
             }
@@ -36,19 +37,25 @@ public class GrammarTester {
     }
 
     private static void handleException(Exception e) {
-        System.err.println(e);
+        System.err.println(e.getMessage());
     }
 
     public static void main(String[] args) {
         for (String testName : testsList(TESTS_PATH)) {
+            System.out.println(testName);
+
             try {
                 SQLGrammarParser parser = new SQLGrammarParser(new CommonTokenStream(
                         new SQLGrammarLexer(new ANTLRInputStream(new FileInputStream(testName)))));
 
-                System.out.println(parser.script().result);
+                for (IQuery query : parser.script().result) {
+                    System.out.println(query);
+                }
             } catch (IOException e) {
                 handleException(e);
             }
+
+            System.out.println();
         }
     }
 }

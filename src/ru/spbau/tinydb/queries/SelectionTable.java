@@ -9,21 +9,14 @@ import java.util.List;
 /**
  * @author adkozlov
  */
-public class SelectionTable {
+public class SelectionTable extends TableNameContainer {
 
-    @NotNull
-    private final String tableName;
     @NotNull
     private final List<JoinOnExpression> expressions;
 
     public SelectionTable(@NotNull String tableName, @NotNull List<JoinOnExpression> expressions) {
-        this.tableName = tableName;
+        super(tableName);
         this.expressions = Collections.unmodifiableList(expressions);
-    }
-
-    @NotNull
-    public String getTableName() {
-        return tableName;
     }
 
     @NotNull
@@ -35,8 +28,7 @@ public class SelectionTable {
     @Override
     public String toString() {
         return "SelectionTable{" +
-                "tableName='" + tableName + '\'' +
-                ", expressions=" + expressions +
-                '}';
+                "expressions=" + expressions +
+                "} " + super.toString();
     }
 }
