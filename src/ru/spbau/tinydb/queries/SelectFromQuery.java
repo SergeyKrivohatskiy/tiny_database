@@ -3,9 +3,14 @@ package ru.spbau.tinydb.queries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import ru.spbau.tinydb.cursors.WhereCursor;
+import ru.spbau.tinydb.tinyDatabase.TinyDatabase;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author adkozlov
@@ -42,7 +47,15 @@ public class SelectFromQuery implements IQuery {
 
     @Override
     public void execute() {
-
+    	TinyDatabase db = TinyDatabase.getInstance();
+    	// TODO rewrite with join
+    	Iterator<Map<SecondLevelId, Object>> selectAll = db.selectAll(getTable().getTableName());
+    	Iterator<Map<SecondLevelId, Object>> result = new WhereCursor(selectAll, getFilter());
+    	
+    	// TODO change
+    	while(result.hasNext()) {
+    		System.out.println(result.next());
+    	}
     }
 
     @NotNull

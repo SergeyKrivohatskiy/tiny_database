@@ -2,6 +2,8 @@ package ru.spbau.tinydb.queries;
 
 import org.jetbrains.annotations.NotNull;
 
+import ru.spbau.tinydb.tinyDatabase.TinyDatabase;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +35,8 @@ public class InsertIntoQuery extends TableNameContainer implements IQuery {
 
     @Override
     public void execute() {
-
+    	TinyDatabase db = TinyDatabase.getInstance();
+    	db.insertRecord(getTableName(), getAttributes(), getValues());
     }
 
     @NotNull
