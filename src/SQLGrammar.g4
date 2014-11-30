@@ -9,6 +9,7 @@ options {
 
     import java.util.*;
     import ru.spbau.tinydb.queries.*;
+    import ru.spbau.tinydb.expressions.*;
     import ru.spbau.tinydb.expressions.bool.*;
     import ru.spbau.tinydb.expressions.comparison.*;
 }
@@ -34,13 +35,19 @@ query returns [IQuery result]
     :   ( ( createTable {
         $result = $createTable.result;
     }
-    ) | (   selectFrom {
+    ) | ( createIndex {
+        $result = $createIndex.result;
+    }
+    ) | ( selectFrom {
         $result = $selectFrom.result;
     }
-    ) | (   insertInto {
+    ) | ( insertInto {
         $result = $insertInto.result;
     }
-    ) | (   deleteFrom {
+    ) | ( updateSet {
+        $result = $updateSet.result;
+    }
+    ) | ( deleteFrom {
         $result = $deleteFrom.result;
     }
     ) ) SEMICOLON
@@ -51,17 +58,14 @@ createTable returns [CreateTableQuery result]
     List<Attribute> attributes = new ArrayList<>();
 }
     :   CREATE TABLE firstLevelId LEFT_PARENTHESIS attribute {
-        $result = new CreateTableQuery($firstLevelId.result, attributes);
         attributes.add($attribute.result);
     }
-    (
-        COMMA (
-            attribute {
-                attributes.add($attribute.result);
-            }
-        )
-    )*
-    RIGHT_PARENTHESIS
+    ( COMMA ( attribute {
+        attributes.add($attribute.result);
+    }
+    ) )* RIGHT_PARENTHESIS {
+        $result = new CreateTableQuery($firstLevelId.result, attributes);
+    }
     ;
 
 attribute returns [Attribute result]
@@ -118,7 +122,7 @@ doubleLiteral returns [Double result]
 
 varCharLiteral returns [String result]
     :   QUOTES (~QUOTES)* QUOTES {
-        $result = $text.replaceAll("\"", "");
+        $result = $text.replaceAll("\'", "");
     }
     ;
 
@@ -134,31 +138,69 @@ firstLevelId returns [String result]
     ;
 
 idSuffix
-    :   (
-        LOWER_CASE
+    :   ( LOWER_CASE
     |   UPPER_CASE
     |   DECIMAL_DIGIT
     |   UNDERLINE
     )+
     ;
 
+createIndex returns [CreateIndexQuery result]
+@init {
+    boolean isUnique = false;
+    String indexName = null;
+    String tableName = null;
+    List<String> attributeNames = new ArrayList<>();
+    boolean isAscending = true;
+    boolean isUsingHash = true;
+}
+    :   CREATE ( UNIQUE {
+        isUnique = true;
+    }
+    )? INDEX firstLevelId ON {
+        indexName = $firstLevelId.result;
+    }
+    firstLevelId LEFT_PARENTHESIS {
+        tableName = $firstLevelId.result;
+    }
+    firstLevelId {
+        attributeNames.add($firstLevelId.result);
+    }
+    ( ASC | ( DESC {
+        isAscending = false;
+    }
+    ) )? ( COMMA firstLevelId {
+        attributeNames.add($firstLevelId.result);
+    }
+    )* RIGHT_PARENTHESIS USING ( ( BTREE {
+        isUsingHash = false;
+    }
+    ) | HASH ) {
+        $result = new CreateIndexQuery(tableName, indexName, attributeNames, isUnique, isAscending, isUsingHash);
+    }
+    ;
+
 selectFrom returns [SelectFromQuery result]
 @init {
     WhereCondition condition = null;
 }
-    :   SELECT filter FROM table ( whereCondition {
+    :   SELECT filter FROM selectionTable ( whereCondition {
         condition = $whereCondition.result;
-    } )? {
-        $result = new SelectFromQuery($table.text, $filter.result, condition);
+    }
+    )? {
+        $result = new SelectFromQuery($selectionTable.result, $filter.result, condition);
     }
     ;
 
 insertInto returns [InsertIntoQuery result]
 @init {
+    String tableName = null;
     List<String> attributes = new ArrayList<>();
     List<Object> values = new ArrayList<>();
 }
-    :   INSERT INTO TABLE LEFT_PARENTHESIS firstLevelId {
+    :   INSERT INTO firstLevelId LEFT_PARENTHESIS {
+        tableName = $firstLevelId.result;
+    }firstLevelId {
         attributes.add($firstLevelId.result);
     }
     ( COMMA firstLevelId {
@@ -171,13 +213,48 @@ insertInto returns [InsertIntoQuery result]
         values.add($value.result);
     }
     )* RIGHT_PARENTHESIS {
-        $result = new InsertIntoQuery(attributes, values);
+        $result = new InsertIntoQuery(tableName, attributes, values);
+    }
+    ;
+
+updateSet returns [UpdateTableQuery result]
+@init {
+    String tableName = null;
+    List<AssignmentExpression> expressions = new ArrayList<>();
+}
+    :   UPDATE firstLevelId SET assignmentExpression {
+        tableName = $firstLevelId.result;
+        expressions.add($assignmentExpression.result);
+    } ( COMMA assignmentExpression {
+        expressions.add($assignmentExpression.result);
+    }
+    )* whereCondition {
+        $result = new UpdateTableQuery(tableName, expressions, $whereCondition.result);
+    }
+    ;
+
+assignmentExpression returns [AssignmentExpression result]
+@init {
+    String attributeName = null;
+    Object value = null;
+}
+    :   firstLevelId EQUAL value {
+        attributeName = $firstLevelId.result;
+        value = $value.result;
+
+        if (value instanceof Integer) {
+            $result = new AssignmentExpression<Integer>(attributeName, (Integer) value);
+        } else if (value instanceof Double) {
+            $result = new AssignmentExpression<Double>(attributeName, (Double) value);
+        } else {
+            $result = new AssignmentExpression<String>(attributeName, (String) value);
+        }
     }
     ;
 
 deleteFrom returns [DeleteFromQuery result]
-    :   DELETE FROM TABLE whereCondition {
-        $result = new DeleteFromQuery($whereCondition.result);
+    :   DELETE FROM firstLevelId whereCondition {
+        $result = new DeleteFromQuery($firstLevelId.result, $whereCondition.result);
     }
     ;
 
@@ -188,9 +265,11 @@ filter returns [List<String> result]
     |   firstLevelId {
         $result = new ArrayList<>();
         $result.add($firstLevelId.result);
-    } ( COMMA firstLevelId {
+    }
+    ( COMMA firstLevelId {
         $result.add($firstLevelId.result);
-    } )*
+    }
+    )*
     ;
 
 whereCondition returns [WhereCondition result]
@@ -199,8 +278,34 @@ whereCondition returns [WhereCondition result]
     }
     ;
 
-table
-    :   firstLevelId ( INNER JOIN firstLevelId ON secondLevelId EQUAL secondLevelId )*
+selectionTable returns [SelectionTable result]
+@init {
+    String tableName = null;
+    List<JoinOnExpression> expressions = new ArrayList<>();
+}
+    :   firstLevelId {
+        tableName = $firstLevelId.result;
+    }
+    ( joinOnExpression {
+        expressions.add($joinOnExpression.result);
+    }
+    )* {
+        $result = new SelectionTable(tableName, expressions);
+    }
+    ;
+
+joinOnExpression returns [JoinOnExpression result]
+@init {
+    String tableName = null;
+    SecondLevelId firstId = null;
+}
+    :   INNER JOIN firstLevelId ON secondLevelId EQUAL {
+        tableName = $firstLevelId.result;
+        firstId = $secondLevelId.result;
+    }
+    secondLevelId {
+        $result = new JoinOnExpression(tableName, firstId, $secondLevelId.result);
+    }
     ;
 
 secondLevelId returns [SecondLevelId result]
@@ -209,7 +314,8 @@ secondLevelId returns [SecondLevelId result]
 }
     :   firstLevelId ARROW {
         tableName = $firstLevelId.result;
-    } firstLevelId {
+    }
+    firstLevelId {
         $result = new SecondLevelId(tableName, $firstLevelId.result);
     }
     ;
@@ -221,9 +327,11 @@ booleanExpression returns [BooleanExpression result]
 }
     :   orExpression {
         first = $orExpression.result;
-    } ( OR orExpression {
+    }
+    ( OR orExpression {
         second = $orExpression.result;
-    } )? {
+    }
+    )? {
         $result = new BooleanExpression(first, second);
     }
     ;
@@ -235,9 +343,11 @@ orExpression returns [OrExpression result]
 }
     :   andExpression {
         first = $andExpression.result;
-    } ( AND andExpression {
+    }
+    ( AND andExpression {
         second = $andExpression.result;
-    } )? {
+    }
+    )? {
         $result = new OrExpression(first, second);
     }
     ;
@@ -308,7 +418,8 @@ equalExpression returns [EqualExpression result]
     |   value EQUAL secondLevelId {
         id = $secondLevelId.result;
         value = $value.result;
-    } ) {
+    }
+    ) {
         if (value instanceof Integer) {
             $result = new EqualExpression<Integer>(id, (Integer) value);
         } else if (value instanceof Double) {
@@ -331,7 +442,8 @@ notEqualExpression returns [NotEqualExpression result]
     |   value NOT_EQUAL secondLevelId {
         id = $secondLevelId.result;
         value = $value.result;
-    } ) {
+    }
+    ) {
         if (value instanceof Integer) {
             $result = new NotEqualExpression<Integer>(id, (Integer) value);
         } else if (value instanceof Double) {
@@ -354,7 +466,8 @@ lessExpression returns [LessExpression result]
     |   value GREATER secondLevelId {
         id = $secondLevelId.result;
         value = $value.result;
-    } ) {
+    }
+    ) {
         if (value instanceof Integer) {
             $result = new LessExpression<Integer>(id, (Integer) value);
         } else if (value instanceof Double) {
@@ -377,7 +490,8 @@ lessOrEqualExpression returns [LessOrEqualExpression result]
     |   value GREATER_OR_EQUAL secondLevelId {
         id = $secondLevelId.result;
         value = $value.result;
-    } ) {
+    }
+    ) {
         if (value instanceof Integer) {
             $result = new LessOrEqualExpression<Integer>(id, (Integer) value);
         } else if (value instanceof Double) {
@@ -400,7 +514,8 @@ greaterExpression returns [GreaterExpression result]
     |   value LESS secondLevelId {
         id = $secondLevelId.result;
         value = $value.result;
-    } ) {
+    }
+    ) {
         if (value instanceof Integer) {
             $result = new GreaterExpression<Integer>(id, (Integer) value);
         } else if (value instanceof Double) {
@@ -423,7 +538,8 @@ greaterOrEqualExpression returns [GreaterOrEqualExpression result]
     |   value LESS_OR_EQUAL secondLevelId {
         id = $secondLevelId.result;
         value = $value.result;
-    } ) {
+    }
+    ) {
           if (value instanceof Integer) {
               $result = new GreaterOrEqualExpression<Integer>(id, (Integer) value);
           } else if (value instanceof Double) {
@@ -470,6 +586,34 @@ CREATE
     :   'CREATE'
     ;
 
+UNIQUE
+    :   'UNIQUE'
+    ;
+
+INDEX
+    :   'INDEX'
+    ;
+
+USING
+    :   'USING'
+    ;
+
+BTREE
+    :   'BTREE'
+    ;
+
+HASH
+    :   'HASH'
+    ;
+
+ASC
+    :   'ASC'
+    ;
+
+DESC
+    :   'DESC'
+    ;
+
 DELETE
     :   'DELETE'
     ;
@@ -484,6 +628,14 @@ INTO
 
 VALUES
     :   'VALUES'
+    ;
+
+UPDATE
+    :   'UPDATE'
+    ;
+
+SET
+    :   'SET'
     ;
 
 TABLE
@@ -595,5 +747,5 @@ GREATER_OR_EQUAL
     ;
 
 QUOTES
-    :   '"'
+    :   '\''
     ;

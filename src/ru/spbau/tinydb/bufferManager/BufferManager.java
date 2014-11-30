@@ -1,5 +1,7 @@
 package ru.spbau.tinydb.bufferManager;
 
+import ru.spbau.tinydb.common.DBException;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,16 +30,21 @@ public class BufferManager {
     private int currentPos = -1;
     private int length;
 
-    public BufferManager(String dbFileName) throws FileNotFoundException {
+    public BufferManager(String dbFileName) throws DBException {
         this(new File(dbFileName));
     }
 
-    public BufferManager(File dbFile) throws FileNotFoundException {
-        this.dbFile = new RandomAccessFile(dbFile, "rw");
+    public BufferManager(File dbFile) throws DBException {
+        try {
+            this.dbFile = new RandomAccessFile(dbFile, "rw");
+        } catch (FileNotFoundException e) {
+            throw new DBException(e);
+        }
+
         init();
     }
 
-    private void init() {
+    private void init() throws DBException {
         Arrays.fill(pagesLoaded, -1);
         try {
             length = (int) (dbFile.length() / PAGE_SIZE);
@@ -49,7 +56,7 @@ public class BufferManager {
                 // loadHeader
             }
         } catch (IOException e) {
-            throw new RuntimeException("IOException in BufferManager init method");
+            throw new DBException("IOException in BufferManager init method");
         }
     }
 

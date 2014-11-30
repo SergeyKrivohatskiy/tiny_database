@@ -3,6 +3,8 @@ package ru.spbau.tinydb.queries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -11,16 +13,31 @@ import java.util.List;
 public class SelectFromQuery implements IQuery {
 
     @NotNull
-    private final String tableName;
-    @Nullable
+    private final SelectionTable table;
+    @NotNull
     private final List<String> attributes;
     @Nullable
     private final WhereCondition filter;
 
-    public SelectFromQuery(@NotNull String tableName, @Nullable List<String> attributes, @Nullable WhereCondition filter) {
-        this.tableName = tableName;
-        this.attributes = attributes;
+    public SelectFromQuery(@NotNull SelectionTable table, @Nullable List<String> attributes, @Nullable WhereCondition filter) {
+        this.table = table;
+        this.attributes = Collections.unmodifiableList(attributes != null ? attributes : new ArrayList<String>());
         this.filter = filter;
+    }
+
+    @NotNull
+    public SelectionTable getTable() {
+        return table;
+    }
+
+    @NotNull
+    public List<String> getAttributes() {
+        return attributes;
+    }
+
+    @Nullable
+    public WhereCondition getFilter() {
+        return filter;
     }
 
     @Override
@@ -28,10 +45,11 @@ public class SelectFromQuery implements IQuery {
 
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "SelectFromQuery{" +
-                "tableName='" + tableName + '\'' +
+                "table=" + table +
                 ", attributes=" + attributes +
                 ", filter=" + filter +
                 '}';

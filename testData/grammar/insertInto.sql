@@ -1,1 +1,1 @@
-INSERT INTO TABLE (id, name) VALUES (5, "Andy");
+INSERT INTO students(student_id, first_name) VALUES (5, 'Andy');

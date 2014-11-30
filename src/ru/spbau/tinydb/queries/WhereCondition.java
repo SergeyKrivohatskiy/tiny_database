@@ -21,6 +21,7 @@ public class WhereCondition {
         return condition.execute(values);
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "WhereCondition{" +

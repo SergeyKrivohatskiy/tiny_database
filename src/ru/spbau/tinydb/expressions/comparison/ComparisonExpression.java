@@ -33,6 +33,7 @@ public abstract class ComparisonExpression<V extends Comparable<V>> implements E
         return value;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return id + " " + operationToString() + " " + value;

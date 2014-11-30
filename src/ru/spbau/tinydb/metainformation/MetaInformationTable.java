@@ -1,6 +1,9 @@
 package ru.spbau.tinydb.metainformation;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.spbau.tinydb.bufferManager.BufferManager;
+import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.queries.Attribute;
 import ru.spbau.tinydb.queries.Attribute.DoubleType;
 import ru.spbau.tinydb.queries.Attribute.IntegerType;
@@ -28,16 +31,19 @@ public class MetaInformationTable {
     private final static SecondLevelId NAME_ID = new SecondLevelId("metainf", "name");
     private final static SecondLevelId VAL1_ID = new SecondLevelId("metainf", "val1");
     private final static SecondLevelId VAL2_ID = new SecondLevelId("metainf", "val2");
+
+    @NotNull
     private final BufferManager bufferManager;
+    @NotNull
     private final Table table;
 
-
-    public MetaInformationTable(BufferManager bufferManager) {
+    public MetaInformationTable(@NotNull BufferManager bufferManager) {
         this.bufferManager = bufferManager;
         table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, META_TABLE_SCHEME, "metainf");
     }
 
-    public Table loadTable(String name) {
+    @Nullable
+    public Table loadTable(@NotNull String name) {
         int ignore = 0;
         int attributesCount = 0;
         int firstPage = 0;
@@ -65,9 +71,11 @@ public class MetaInformationTable {
             attributesCount = (Integer)row.get(VAL2_ID);
             firstPage = (Integer)row.get(VAL1_ID);
         }
+
         return null;
     }
 
+    @NotNull
     private Attribute.DataType intsToType(Map<SecondLevelId, Object> row) {
         switch ((Integer)row.get(VAL1_ID)){
             case 1:
@@ -77,38 +85,55 @@ public class MetaInformationTable {
             case 3:
                 return new Attribute.VarcharType((Integer) row.get(VAL2_ID));
         }
-        throw new RuntimeException();
+
+        throw new DBException("Unknown type");
     }
 
-    private void typeToInt(Attribute.DataType dataType, Object[] record) {
-        if(dataType instanceof IntegerType) {
-        	record[1] = 1;
-        	return;
-        }
-        if(dataType instanceof DoubleType) {
-        	record[1] = 2;
-        	return;
-        }
-        if(dataType instanceof VarcharType) {
-        	record[1] = 3;
-        	record[2] = ((VarcharType) dataType).getLength();
-        	return;
-        }
-        throw new RuntimeException();
-    }
-
-    public Table createTable(String name, Collection<Attribute> schema) throws UnsupportedEncodingException, ExecutionException {
+    @NotNull
+    public Table createTable(@NotNull String name, @NotNull Collection<Attribute> schema) throws UnsupportedEncodingException, ExecutionException {
         int firstPage = bufferManager.getFreePage();
-        Object[] record = new Object[3];
-        record[0] = name;
-        record[1] = new Integer(firstPage);
-        record[2] = new Integer(schema.size());
-        table.insertRecord(record);
-        for(Attribute attr: schema) {
-        	record[0] = attr.getAttributeName();
-            typeToInt(attr.getDataType(), record);
-            table.insertRecord(record);
+        table.insertRecord(createRecord(name, firstPage, schema.size()));
+
+        for (Attribute attribute : schema) {
+            table.insertRecord(createRecord(attribute));
         }
         return new Table(bufferManager, firstPage, schema, name);
+    }
+
+    @NotNull
+    private static Object[] createRecord(@NotNull String name) {
+        Object[] result = new Object[3];
+        result[0] = name;
+
+        return result;
+    }
+
+    @NotNull
+    private static Object[] createRecord(@NotNull String name, int firstPage, int size) {
+        Object[] result = createRecord(name);
+
+        result[1] = firstPage;
+        result[2] = size;
+
+        return result;
+    }
+
+    @NotNull
+    private static Object[] createRecord(@NotNull Attribute attribute) {
+        Object[] result = createRecord(attribute.getAttributeName());
+
+        Attribute.DataType dataType = attribute.getDataType();
+        if (dataType instanceof IntegerType) {
+            result[1] = 1;
+        } else if (dataType instanceof DoubleType) {
+            result[1] = 2;
+        } else if (dataType instanceof VarcharType) {
+            result[1] = 3;
+            result[2] = ((VarcharType) dataType).getLength();
+        } else {
+            throw new DBException("Unknown type");
+        }
+
+        return result;
     }
 }

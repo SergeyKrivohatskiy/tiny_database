@@ -1,7 +1,7 @@
 CREATE TABLE students (
   id INTEGER,
-  name VARCHAR(10),
-  surname VARCHAR (15),
+  first_name VARCHAR(10),
+  last_name VARCHAR (15),
   age INTEGER
 );
 
