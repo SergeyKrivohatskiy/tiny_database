@@ -25,6 +25,21 @@ public class SelectFromQuery implements IQuery {
         this.filter = filter;
     }
 
+    @NotNull
+    public SelectionTable getTable() {
+        return table;
+    }
+
+    @NotNull
+    public List<String> getAttributes() {
+        return attributes;
+    }
+
+    @Nullable
+    public WhereCondition getFilter() {
+        return filter;
+    }
+
     @Override
     public void execute() {
 
