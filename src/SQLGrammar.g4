@@ -9,6 +9,7 @@ options {
 
     import java.util.*;
     import ru.spbau.tinydb.queries.*;
+    import ru.spbau.tinydb.expressions.*;
     import ru.spbau.tinydb.expressions.bool.*;
     import ru.spbau.tinydb.expressions.comparison.*;
 }
@@ -42,6 +43,9 @@ query returns [IQuery result]
     }
     ) | ( insertInto {
         $result = $insertInto.result;
+    }
+    ) | ( updateSet {
+        $result = $updateSet.result;
     }
     ) | ( deleteFrom {
         $result = $deleteFrom.result;
@@ -118,7 +122,7 @@ doubleLiteral returns [Double result]
 
 varCharLiteral returns [String result]
     :   QUOTES (~QUOTES)* QUOTES {
-        $result = $text.replaceAll("\"", "");
+        $result = $text.replaceAll("\'", "");
     }
     ;
 
@@ -210,6 +214,41 @@ insertInto returns [InsertIntoQuery result]
     }
     )* RIGHT_PARENTHESIS {
         $result = new InsertIntoQuery(tableName, attributes, values);
+    }
+    ;
+
+updateSet returns [UpdateTableQuery result]
+@init {
+    String tableName = null;
+    List<AssignmentExpression> expressions = new ArrayList<>();
+}
+    :   UPDATE firstLevelId SET assignmentExpression {
+        tableName = $firstLevelId.result;
+        expressions.add($assignmentExpression.result);
+    } ( COMMA assignmentExpression {
+        expressions.add($assignmentExpression.result);
+    }
+    )* whereCondition {
+        $result = new UpdateTableQuery(tableName, expressions, $whereCondition.result);
+    }
+    ;
+
+assignmentExpression returns [AssignmentExpression result]
+@init {
+    String attributeName = null;
+    Object value = null;
+}
+    :   firstLevelId EQUAL value {
+        attributeName = $firstLevelId.result;
+        value = $value.result;
+
+        if (value instanceof Integer) {
+            $result = new AssignmentExpression<Integer>(attributeName, (Integer) value);
+        } else if (value instanceof Double) {
+            $result = new AssignmentExpression<Double>(attributeName, (Double) value);
+        } else {
+            $result = new AssignmentExpression<String>(attributeName, (String) value);
+        }
     }
     ;
 
@@ -591,6 +630,14 @@ VALUES
     :   'VALUES'
     ;
 
+UPDATE
+    :   'UPDATE'
+    ;
+
+SET
+    :   'SET'
+    ;
+
 TABLE
     :   'TABLE'
     ;
@@ -700,5 +747,5 @@ GREATER_OR_EQUAL
     ;
 
 QUOTES
-    :   '"'
+    :   '\''
     ;
