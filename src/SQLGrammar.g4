@@ -14,24 +14,19 @@ options {
     import ru.spbau.tinydb.expressions.comparison.*;
 }
 
-@members {
-
-}
-
 script returns [List<IQuery> result]
 @init {
-    $result = new ArrayList<>();
+    List<IQuery> result = new ArrayList<>();
 }
     :   ( query {
-        $result.add($query.result);
+        result.add($query.result);
     }
-    )+ EOF
+    )+ EOF {
+        $result = Collections.unmodifiableList(result);
+    }
     ;
 
 query returns [IQuery result]
-@init {
-    $result = null;
-}
     :   ( ( createTable {
         $result = $createTable.result;
     }
@@ -75,9 +70,6 @@ attribute returns [Attribute result]
     ;
 
 dataType returns [Attribute.DataType result]
-@init {
-    $result = null;
-}
     :   INTEGER_TYPE {
         $result = Attribute.IntegerType.getInstance();
     }

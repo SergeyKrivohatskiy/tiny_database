@@ -2,9 +2,9 @@ package ru.spbau.tinydb.tinyDatabase;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.RecognitionException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.spbau.tinydb.common.DBANTLRErrorListener;
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.grammar.SQLGrammarLexer;
 import ru.spbau.tinydb.grammar.SQLGrammarParser;
@@ -79,14 +79,17 @@ public class REPL implements Runnable {
     @Nullable
     private IQuery parseQuery(@NotNull String query) {
         try {
-            SQLGrammarParser parser = new SQLGrammarParser(
-                    new CommonTokenStream(new SQLGrammarLexer(new ANTLRInputStream(query))));
+            SQLGrammarLexer lexer = new SQLGrammarLexer(new ANTLRInputStream(query));
+            lexer.removeErrorListeners();
+            lexer.addErrorListener(DBANTLRErrorListener.getInstance());
+
+            SQLGrammarParser parser = new SQLGrammarParser(new CommonTokenStream(lexer));
+            parser.removeErrorListeners();
+            parser.addErrorListener(DBANTLRErrorListener.getInstance());
 
             return parser.query().result;
-        } catch (RecognitionException e) {
+        } catch (DBException e) {
             handleException(e);
-        } catch (IllegalArgumentException e) {
-            printFailureMessage("Illegal query");
         }
 
         return null;
