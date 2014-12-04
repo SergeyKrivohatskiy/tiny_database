@@ -17,12 +17,12 @@ public class WhereCursor implements Iterator<Map<SecondLevelId, Object>> {
 
     @NotNull
     private final Iterator<Map<SecondLevelId, Object>> baseCursor;
-    @NotNull
+    @Nullable
     private final WhereCondition condition;
     @Nullable
     private Map<SecondLevelId, Object> values;
 
-    public WhereCursor(@NotNull Iterator<Map<SecondLevelId, Object>> baseCursor, @NotNull WhereCondition condition) {
+    public WhereCursor(@NotNull Iterator<Map<SecondLevelId, Object>> baseCursor, @Nullable WhereCondition condition) {
         this.baseCursor = baseCursor;
         this.condition = condition;
 
@@ -34,7 +34,7 @@ public class WhereCursor implements Iterator<Map<SecondLevelId, Object>> {
         while (baseCursor.hasNext()) {
             Map<SecondLevelId, Object> values = baseCursor.next();
 
-            if (condition.check(values)) {
+            if (condition == null || condition.check(values)) {
                 return Collections.unmodifiableMap(values);
             }
         }
