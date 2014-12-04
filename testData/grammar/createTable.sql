@@ -1,11 +1,16 @@
 CREATE TABLE students (
-  id INTEGER,
+  student_id INTEGER,
   first_name VARCHAR(10),
   last_name VARCHAR (15),
-  age INTEGER
+  avg_point DOUBLE
 );
 
 CREATE TABLE groups (
-  id INTEGER,
-  name VARCHAR(3)
+  group_id INTEGER,
+  group_name VARCHAR(3)
+);
+
+CREATE TABLE student_groups (
+  student_id INTEGER,
+  group_id INTEGER
 );
