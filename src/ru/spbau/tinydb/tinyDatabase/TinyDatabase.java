@@ -1,7 +1,6 @@
 package ru.spbau.tinydb.tinyDatabase;
 
 import org.jetbrains.annotations.NotNull;
-
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.metainformation.MetaInformationTable;
@@ -80,13 +79,13 @@ public class TinyDatabase implements Closeable {
 
     private Object getDefault(DataType dataType) {
         if (dataType instanceof IntegerType) {
-            return new Integer(0);
+            return 0;
         }
         if (dataType instanceof DoubleType) {
-            return new Double(0);
+            return (double) 0;
         }
         if (dataType instanceof VarcharType) {
-            return new String("");
+            return "";
         }
 
         throw new DBException("Unsupported attribute type");
