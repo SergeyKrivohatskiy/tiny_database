@@ -1,9 +1,7 @@
-package grammar;
+package ru.spbau.tinydb.grammar;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import ru.spbau.tinydb.grammar.SQLGrammarLexer;
-import ru.spbau.tinydb.grammar.SQLGrammarParser;
 import ru.spbau.tinydb.queries.IQuery;
 
 import java.io.FileInputStream;
@@ -21,11 +19,12 @@ import java.util.List;
 public class GrammarTester {
 
     public static final String TESTS_PATH = "testData/grammar";
+    public static final String FILTER = "*.sql";
 
     private static List<String> testsList(String directory) {
         List<String> result = new ArrayList<>();
 
-        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(directory), "*.sql")) {
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(directory), FILTER)) {
             for (Path path : directoryStream) {
                 result.add(path.toString());
             }
