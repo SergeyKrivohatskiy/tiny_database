@@ -1,6 +1,7 @@
 package ru.spbau.tinydb.queries;
 
 import org.jetbrains.annotations.NotNull;
+import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.tinyDatabase.TinyDatabase;
 
 import java.util.Collections;
@@ -9,7 +10,7 @@ import java.util.List;
 /**
  * @author adkozlov
  */
-public class CreateTableQuery extends TableNameContainer implements IQuery {
+public class CreateTableQuery extends TableNameContainer implements IQuery<Boolean> {
 
     @NotNull
     private final List<Attribute> attributes;
@@ -24,18 +25,9 @@ public class CreateTableQuery extends TableNameContainer implements IQuery {
     }
 
     @Override
-    public void execute() {
-    	try {
-			TinyDatabase db = TinyDatabase.getInstance();
-            if (db.createTable(getTableName(), getAttributes())) {
-                //table is created
-			} else {
-				//table is already exist
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    @NotNull
+    public Boolean call() throws DBException {
+        return TinyDatabase.getInstance().createTable(getTableName(), getAttributes());
     }
 
     @NotNull

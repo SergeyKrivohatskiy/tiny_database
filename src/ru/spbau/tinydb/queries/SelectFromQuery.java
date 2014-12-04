@@ -2,20 +2,16 @@ package ru.spbau.tinydb.queries;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
+import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.cursors.WhereCursor;
 import ru.spbau.tinydb.tinyDatabase.TinyDatabase;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author adkozlov
  */
-public class SelectFromQuery implements IQuery {
+public class SelectFromQuery implements IQuery<List<Map<SecondLevelId, Object>>> {
 
     @NotNull
     private final SelectionTable table;
@@ -46,16 +42,18 @@ public class SelectFromQuery implements IQuery {
     }
 
     @Override
-    public void execute() {
-    	TinyDatabase db = TinyDatabase.getInstance();
-    	// TODO rewrite with join
-    	Iterator<Map<SecondLevelId, Object>> selectAll = db.selectAll(getTable().getTableName());
-    	Iterator<Map<SecondLevelId, Object>> result = new WhereCursor(selectAll, getFilter());
-    	
-    	// TODO change
-    	while(result.hasNext()) {
-    		System.out.println(result.next());
-    	}
+    @NotNull
+    public List<Map<SecondLevelId, Object>> call() throws DBException {
+        // TODO rewrite with join
+        Iterator<Map<SecondLevelId, Object>> selectAll = TinyDatabase.getInstance().selectAll(getTable().getTableName());
+        Iterator<Map<SecondLevelId, Object>> cursor = new WhereCursor(selectAll, getFilter());
+
+        List<Map<SecondLevelId, Object>> result = new ArrayList<>();
+        while (cursor.hasNext()) {
+            result.add(cursor.next());
+        }
+
+        return result;
     }
 
     @NotNull

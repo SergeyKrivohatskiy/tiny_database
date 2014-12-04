@@ -6,14 +6,18 @@ import org.jetbrains.annotations.Nullable;
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.grammar.SQLGrammarParser;
 import ru.spbau.tinydb.queries.IQuery;
+import ru.spbau.tinydb.queries.SecondLevelId;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * @author adkozlov
  */
 public class ConsoleRunnable extends REPLRunnable<String> {
+
+    private static final String ROWS_AFFECTED_FORMAT = "%d rows affected";
 
     protected ConsoleRunnable(@NotNull String dbFileName,
                               @Nullable String outputFileName,
@@ -36,9 +40,20 @@ public class ConsoleRunnable extends REPLRunnable<String> {
                 continue;
             }
 
-            // TODO: add result of query execution
-            if (executeQuery(query)) {
+            Object result = executeQuery(query);
+            if (result == null) {
+                continue;
+            }
+
+            if (result instanceof Integer) {
+                printSuccessMessage(String.format(ROWS_AFFECTED_FORMAT, (Integer) result));
+            } else if (result instanceof Boolean) {
                 printSuccessMessage("");
+            } else if (result instanceof Map) {
+                Map<SecondLevelId, Object> selectResult = (Map<SecondLevelId, Object>) result;
+                printSuccessMessage(selectResult.toString());
+            } else {
+                printFailureMessage("unexpected type of result");
             }
         }
     }

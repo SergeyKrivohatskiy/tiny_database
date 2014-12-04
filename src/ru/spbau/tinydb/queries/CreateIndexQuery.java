@@ -1,6 +1,7 @@
 package ru.spbau.tinydb.queries;
 
 import org.jetbrains.annotations.NotNull;
+import ru.spbau.tinydb.common.DBException;
 
 import java.util.Collections;
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 /**
  * @author adkozlov
  */
-public class CreateIndexQuery extends TableNameContainer implements IQuery {
+public class CreateIndexQuery extends TableNameContainer implements IQuery<Boolean> {
 
     @NotNull
     private final String indexName;
@@ -51,8 +52,9 @@ public class CreateIndexQuery extends TableNameContainer implements IQuery {
     }
 
     @Override
-    public void execute() {
-
+    @NotNull
+    public Boolean call() throws DBException {
+        throw new DBException(new UnsupportedOperationException("unsupported create index operation"));
     }
 
     @NotNull

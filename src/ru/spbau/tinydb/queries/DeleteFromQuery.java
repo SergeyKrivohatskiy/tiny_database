@@ -1,11 +1,12 @@
 package ru.spbau.tinydb.queries;
 
 import org.jetbrains.annotations.NotNull;
+import ru.spbau.tinydb.common.DBException;
 
 /**
  * @author adkozlov
  */
-public class DeleteFromQuery extends TableNameContainer implements IQuery {
+public class DeleteFromQuery extends TableNameContainer implements IQuery<Integer> {
 
     @NotNull
     private final WhereCondition filter;
@@ -16,8 +17,9 @@ public class DeleteFromQuery extends TableNameContainer implements IQuery {
     }
 
     @Override
-    public void execute() {
-
+    @NotNull
+    public Integer call() throws DBException {
+        throw new DBException(new UnsupportedOperationException("unsupported delete operation"));
     }
 
     @NotNull

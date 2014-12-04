@@ -11,14 +11,17 @@ import ru.spbau.tinydb.grammar.SQLGrammarParser;
 import ru.spbau.tinydb.queries.IQuery;
 
 import java.io.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * @author adkozlov
  */
 public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
 
-    private static final String SUCCESS_MESSAGE_FORMAT = "OK\n%s";
-    private static final String FAILURE_MESSAGE_FORMAT = "ERROR\n%s";
+    private static final String SUCCESS_MESSAGE_FORMAT = "OK\n%s\n";
+    private static final String FAILURE_MESSAGE_FORMAT = "ERROR\n%s\n";
 
     @NotNull
     private final String dbFileName;
@@ -80,16 +83,17 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
         return stdErr;
     }
 
-    protected final boolean executeQuery(@NotNull IQuery query) {
+    @Nullable
+    protected final Object executeQuery(@NotNull IQuery query) {
         try {
-            query.execute();
+            Future future = Executors.newSingleThreadExecutor().submit(query);
 
-            return true;
-        } catch (DBException e) {
+            return future.get();
+        } catch (DBException | InterruptedException | ExecutionException e) {
             handleException(e);
         }
 
-        return false;
+        return null;
     }
 
     protected void printSuccessMessage(@NotNull String message) {
