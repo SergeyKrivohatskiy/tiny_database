@@ -23,9 +23,9 @@ public class REPL {
             System.out.printf(USAGE_MESSAGE_FORMAT, INPUT_FILENAME_KEY, OUTPUT_FILENAME_KEY, ERRORS_FILENAME_KEY);
         }
 
-        try {
-            new Thread(createRunnable(Arrays.asList(args))).start();
-        } catch (FileNotFoundException e) {
+        try (REPLRunnable runnable = createRunnable(Arrays.asList(args))) {
+            new Thread(runnable).start();
+        } catch (Exception e) {
             System.err.println(e.getMessage());
         }
     }
