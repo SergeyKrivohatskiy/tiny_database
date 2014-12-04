@@ -1,6 +1,6 @@
 package ru.spbau.tinydb.cursors;
 
-import ru.spbau.tinydb.expression.Expression;
+import ru.spbau.tinydb.expressions.comparison.JoinOnExpression;
 
 import java.util.Iterator;
 
@@ -13,11 +13,11 @@ public class NLJoinCursor implements Iterator<Object[]> {
     private final Iterator<Object[]> firstCursor;
     private Iterator<Object[]> secondCursor;
     private final Iterable<Object[]> iterable;
-    private final Expression eqAttrs;
+    private final JoinOnExpression eqAttrs;
     private Object[] value;
     private Object[] firstVal;
 
-    public NLJoinCursor(Iterator<Object[]> firstCursor, Iterable<Object[]> iterable, Expression eqAttrs) {
+    public NLJoinCursor(Iterator<Object[]> firstCursor, Iterable<Object[]> iterable, JoinOnExpression eqAttrs) {
         this.firstCursor = firstCursor;
         this.iterable = iterable;
         this.eqAttrs = eqAttrs;
@@ -35,9 +35,11 @@ public class NLJoinCursor implements Iterator<Object[]> {
             }
             while (secondCursor.hasNext()) {
             	Object[] val = join(firstVal, secondCursor.next());
-                if (eqAttrs.check(val)) {
-                    return val;
-                }
+
+                // TODO implement
+//                if (eqAttrs.execute(val)) {
+//                    return val;
+//                }
             }
             firstVal = null;
         }
