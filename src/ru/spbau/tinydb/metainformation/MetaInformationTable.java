@@ -56,7 +56,7 @@ public class MetaInformationTable {
             String currName = (String) row.get(NAME_ID);
             if(attributes != null) {
                 attributesCount -= 1;
-                Attribute.DataType type = intsToType(row);
+                Attribute.DataType type = integersToType(row);
                 attributes.add(new Attribute(currName, type));
                 if(attributesCount == 0) {
                     return new Table(bufferManager, firstPage, attributes, name);
@@ -76,7 +76,7 @@ public class MetaInformationTable {
     }
 
     @NotNull
-    private Attribute.DataType intsToType(Map<SecondLevelId, Object> row) {
+    private Attribute.DataType integersToType(Map<SecondLevelId, Object> row) {
         switch ((Integer)row.get(VAL1_ID)){
             case 1:
                 return Attribute.IntegerType.getInstance();
@@ -125,8 +125,10 @@ public class MetaInformationTable {
         Attribute.DataType dataType = attribute.getDataType();
         if (dataType instanceof IntegerType) {
             result[1] = 1;
+            result[2] = 0;
         } else if (dataType instanceof DoubleType) {
             result[1] = 2;
+            result[2] = 0;
         } else if (dataType instanceof VarcharType) {
             result[1] = 3;
             result[2] = ((VarcharType) dataType).getLength();
