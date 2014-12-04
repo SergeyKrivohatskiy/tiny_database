@@ -9,8 +9,14 @@ import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.grammar.SQLGrammarLexer;
 import ru.spbau.tinydb.grammar.SQLGrammarParser;
 import ru.spbau.tinydb.queries.IQuery;
+import ru.spbau.tinydb.queries.SecondLevelId;
+import ru.spbau.tinydb.queries.SelectFromQuery;
 
 import java.io.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -22,6 +28,10 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
 
     private static final String SUCCESS_MESSAGE_FORMAT = "OK\n%s\n";
     private static final String FAILURE_MESSAGE_FORMAT = "ERROR\n%s\n";
+
+    private static final String ROWS_AFFECTED_FORMAT = "%d rows affected";
+    private static final String ALREADY_EXISTS = "already exists, not created";
+    private static final String NO_ROW_SELECTED = "no row selected";
 
     @NotNull
     private final String dbFileName;
@@ -83,8 +93,16 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
         return stdErr;
     }
 
+    protected void executeAndPrintResult(@NotNull IQuery query) {
+        Object result = executeQuery(query);
+
+        if (result != null) {
+            printQueryResult(query, result);
+        }
+    }
+
     @Nullable
-    protected final Object executeQuery(@NotNull IQuery query) {
+    private final Object executeQuery(@NotNull IQuery query) {
         try {
             Future future = Executors.newSingleThreadExecutor().submit(query);
 
@@ -94,6 +112,63 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
         }
 
         return null;
+    }
+
+    private void printQueryResult(@NotNull IQuery query, @NotNull Object result) {
+        if (result instanceof Integer) {
+            printSuccessMessage(String.format(ROWS_AFFECTED_FORMAT, (Integer) result));
+        } else if (result instanceof Boolean) {
+            printSuccessMessage((boolean) result ? "" : ALREADY_EXISTS);
+        } else if (result instanceof List) {
+            SelectFromQuery select = (SelectFromQuery) query;
+            printSelectQueryResult(select.getAttributes(), (List<Map<SecondLevelId, Object>>) result);
+        } else {
+            printFailureMessage("unexpected type of result");
+        }
+    }
+
+    private void printSelectQueryResult(@NotNull List<String> attributesList,
+                                        @NotNull List<Map<SecondLevelId, Object>> result) {
+        if (!result.isEmpty()) {
+            Set<SecondLevelId> attributes = getSelectedAttributes(attributesList, result.get(0).keySet());
+
+            for (SecondLevelId attribute : attributes) {
+                getStdOut().print(attribute + "\t");
+            }
+            stdOut.println();
+            stdOut.flush();
+
+            for (Map<SecondLevelId, Object> row : result) {
+                for (SecondLevelId attribute : attributes) {
+                    getStdOut().print(row.get(attribute) + "\t");
+                }
+            }
+        } else {
+            stdOut.println(NO_ROW_SELECTED);
+        }
+
+        stdOut.println();
+        stdOut.flush();
+    }
+
+    @NotNull
+    private Set<SecondLevelId> getSelectedAttributes(@NotNull List<String> attributesList,
+                                                     @NotNull Set<SecondLevelId> allAttributes) {
+        Set<SecondLevelId> result = new LinkedHashSet<>();
+
+        if (attributesList.isEmpty()) {
+            result.addAll(allAttributes);
+        } else {
+            for (String attribute : attributesList) {
+                for (SecondLevelId id : allAttributes) {
+                    if (attribute.equals(id.getAttributeName())) {
+                        result.add(id);
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
     protected void printSuccessMessage(@NotNull String message) {

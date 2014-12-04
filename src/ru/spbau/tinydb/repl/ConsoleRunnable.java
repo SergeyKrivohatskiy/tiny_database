@@ -6,18 +6,16 @@ import org.jetbrains.annotations.Nullable;
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.grammar.SQLGrammarParser;
 import ru.spbau.tinydb.queries.IQuery;
-import ru.spbau.tinydb.queries.SecondLevelId;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * @author adkozlov
  */
 public class ConsoleRunnable extends REPLRunnable<String> {
 
-    private static final String ROWS_AFFECTED_FORMAT = "%d rows affected";
+    private static final String SHELL_PREFIX = "$ ";
 
     protected ConsoleRunnable(@NotNull String dbFileName,
                               @Nullable String outputFileName,
@@ -36,24 +34,8 @@ public class ConsoleRunnable extends REPLRunnable<String> {
             }
 
             IQuery query = parseQuery(queryString);
-            if (query == null) {
-                continue;
-            }
-
-            Object result = executeQuery(query);
-            if (result == null) {
-                continue;
-            }
-
-            if (result instanceof Integer) {
-                printSuccessMessage(String.format(ROWS_AFFECTED_FORMAT, (Integer) result));
-            } else if (result instanceof Boolean) {
-                printSuccessMessage("");
-            } else if (result instanceof Map) {
-                Map<SecondLevelId, Object> selectResult = (Map<SecondLevelId, Object>) result;
-                printSuccessMessage(selectResult.toString());
-            } else {
-                printFailureMessage("unexpected type of result");
+            if (query != null) {
+                executeAndPrintResult(query);
             }
         }
     }
@@ -92,7 +74,7 @@ public class ConsoleRunnable extends REPLRunnable<String> {
     }
 
     private void printShell() {
-        getStdOut().print("$ ");
+        getStdOut().print(SHELL_PREFIX);
         getStdOut().flush();
     }
 
