@@ -11,7 +11,7 @@ import java.util.*;
 /**
  * @author adkozlov
  */
-public class SelectFromQuery implements IQuery<List<Map<SecondLevelId, Object>>> {
+public class SelectFromQuery implements IQuery<Iterator<Map<SecondLevelId, Object>>> {
 
     @NotNull
     private final SelectionTable table;
@@ -43,17 +43,11 @@ public class SelectFromQuery implements IQuery<List<Map<SecondLevelId, Object>>>
 
     @Override
     @NotNull
-    public List<Map<SecondLevelId, Object>> call() throws DBException {
+    public Iterator<Map<SecondLevelId, Object>> execute() throws DBException {
         // TODO rewrite with join
         Iterator<Map<SecondLevelId, Object>> selectAll = TinyDatabase.getInstance().selectAll(getTable().getTableName());
-        Iterator<Map<SecondLevelId, Object>> cursor = new WhereCursor(selectAll, getFilter());
 
-        List<Map<SecondLevelId, Object>> result = new ArrayList<>();
-        while (cursor.hasNext()) {
-            result.add(cursor.next());
-        }
-
-        return result;
+        return new WhereCursor(selectAll, getFilter());
     }
 
     @NotNull

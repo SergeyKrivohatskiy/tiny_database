@@ -53,7 +53,7 @@ public class CreateIndexQuery extends TableNameContainer implements IQuery<Boole
 
     @Override
     @NotNull
-    public Boolean call() throws DBException {
+    public Boolean execute() throws DBException {
         throw new DBException(new UnsupportedOperationException("unsupported create index operation"));
     }
 
