@@ -1,4 +1,3 @@
 .idea/workspace.xml
 out/*
-src/ru/spbau/tinydb/grammar/*
 *.db
