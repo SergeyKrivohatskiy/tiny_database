@@ -16,6 +16,7 @@ import java.io.IOException;
 public class ConsoleRunnable extends REPLRunnable<String> {
 
     private static final String SHELL_PREFIX = "$ ";
+    private static final String QUIT_COMMAND = "quit()";
 
     protected ConsoleRunnable(@NotNull String dbFileName,
                               @Nullable String outputFileName,
@@ -31,6 +32,8 @@ public class ConsoleRunnable extends REPLRunnable<String> {
             String queryString = readQuery();
             if (queryString == null) {
                 continue;
+            } else if (queryString.equals(QUIT_COMMAND)) {
+                return;
             }
 
             IQuery query = parseQuery(queryString);
