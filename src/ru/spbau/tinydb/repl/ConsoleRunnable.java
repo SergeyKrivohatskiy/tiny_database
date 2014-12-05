@@ -24,8 +24,8 @@ public class ConsoleRunnable extends REPLRunnable<String> {
     }
 
     @Override
-    public void run() {
-        while (true) {
+    public void innerRun() {
+        while (!Thread.interrupted()) {
             printShell();
 
             String queryString = readQuery();

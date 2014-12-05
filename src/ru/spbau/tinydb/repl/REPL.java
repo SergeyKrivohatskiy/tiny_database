@@ -18,16 +18,12 @@ public class REPL {
     private static final String OUTPUT_FILENAME_KEY = "-o";
     private static final String ERRORS_FILENAME_KEY = "-e";
 
-    public static void main(@NotNull String[] args) {
+    public static void main(@NotNull String[] args) throws FileNotFoundException {
         if (!assertArgumentsListLength(args.length)) {
             System.out.printf(USAGE_MESSAGE_FORMAT, INPUT_FILENAME_KEY, OUTPUT_FILENAME_KEY, ERRORS_FILENAME_KEY);
         }
 
-        try (REPLRunnable runnable = createRunnable(Arrays.asList(args))) {
-            new Thread(runnable).start();
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
+        new Thread(createRunnable(Arrays.asList(args))).start();
     }
 
     private static boolean assertArgumentsListLength(int length) {

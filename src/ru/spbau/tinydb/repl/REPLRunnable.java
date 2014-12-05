@@ -93,6 +93,16 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
         return stdErr;
     }
 
+    protected abstract void innerRun();
+
+    @Override
+    public void run() {
+        try (REPLRunnable runnable = this) {
+            innerRun();
+        } catch (Exception e) {
+        }
+    }
+
     protected void executeAndPrintResult(@NotNull IQuery query) {
         Object result = executeQuery(query);
 

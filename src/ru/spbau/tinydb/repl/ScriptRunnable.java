@@ -36,12 +36,13 @@ public class ScriptRunnable extends REPLRunnable<FileInputStream> {
     }
 
     @Override
-    public void run() {
+    public void innerRun() {
         List<IQuery> queries = parseScript();
 
         if (queries != null) {
             for (IQuery query : queries) {
-                executeQuery(query);
+                executeAndPrintResult(query);
+                getStdOut().println();
             }
         }
     }
