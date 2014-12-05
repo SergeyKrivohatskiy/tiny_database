@@ -35,7 +35,7 @@ public class UpdateTableQuery extends TableNameContainer implements IQuery<Integ
 
     @NotNull
     @Override
-    public Integer call() throws DBException {
+    public Integer execute() throws DBException {
         throw new DBException(new UnsupportedOperationException("unsupported update table operation"));
     }
 

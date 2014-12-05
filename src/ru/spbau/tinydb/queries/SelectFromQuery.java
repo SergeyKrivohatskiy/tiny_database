@@ -43,7 +43,7 @@ public class SelectFromQuery implements IQuery<List<Map<SecondLevelId, Object>>>
 
     @Override
     @NotNull
-    public List<Map<SecondLevelId, Object>> call() throws DBException {
+    public List<Map<SecondLevelId, Object>> execute() throws DBException {
         // TODO rewrite with join
         Iterator<Map<SecondLevelId, Object>> selectAll = TinyDatabase.getInstance().selectAll(getTable().getTableName());
         Iterator<Map<SecondLevelId, Object>> cursor = new WhereCursor(selectAll, getFilter());

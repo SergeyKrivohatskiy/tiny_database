@@ -17,9 +17,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * @author adkozlov
@@ -114,10 +111,8 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
     @Nullable
     private final Object executeQuery(@NotNull IQuery query) {
         try {
-            Future future = Executors.newSingleThreadExecutor().submit(query);
-
-            return future.get();
-        } catch (DBException | InterruptedException | ExecutionException e) {
+            return query.execute();
+        } catch (DBException e) {
             handleException(e);
         }
 

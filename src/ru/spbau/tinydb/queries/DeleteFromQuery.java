@@ -18,7 +18,7 @@ public class DeleteFromQuery extends TableNameContainer implements IQuery<Intege
 
     @Override
     @NotNull
-    public Integer call() throws DBException {
+    public Integer execute() throws DBException {
         throw new DBException(new UnsupportedOperationException("unsupported delete operation"));
     }
 

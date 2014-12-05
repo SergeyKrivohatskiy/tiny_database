@@ -26,7 +26,7 @@ public class CreateTableQuery extends TableNameContainer implements IQuery<Boole
 
     @Override
     @NotNull
-    public Boolean call() throws DBException {
+    public Boolean execute() throws DBException {
         return TinyDatabase.getInstance().createTable(getTableName(), getAttributes());
     }
 

@@ -35,7 +35,7 @@ public class InsertIntoQuery extends TableNameContainer implements IQuery<Intege
 
     @NotNull
     @Override
-    public Integer call() throws DBException {
+    public Integer execute() throws DBException {
         TinyDatabase.getInstance().insertRecord(getTableName(), getAttributes(), getValues());
 
         // TODO return correct value of affected rows

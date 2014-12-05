@@ -2,8 +2,10 @@ package ru.spbau.tinydb.repl;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.spbau.tinydb.tinyDatabase.TinyDatabase;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,7 +25,18 @@ public class REPL {
             System.out.printf(USAGE_MESSAGE_FORMAT, INPUT_FILENAME_KEY, OUTPUT_FILENAME_KEY, ERRORS_FILENAME_KEY);
         }
 
-        new Thread(createRunnable(Arrays.asList(args))).start();
+        createRunnable(Arrays.asList(args)).run();
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                try {
+                    TinyDatabase.getInstance().close();
+                } catch (IOException e) {
+                    System.err.println(e.getMessage());
+                }
+            }
+        });
     }
 
     private static boolean assertArgumentsListLength(int length) {
