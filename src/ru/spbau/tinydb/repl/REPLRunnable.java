@@ -13,10 +13,7 @@ import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.queries.SelectFromQuery;
 
 import java.io.*;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author adkozlov
@@ -124,32 +121,41 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
             printSuccessMessage(String.format(ROWS_AFFECTED_FORMAT, (Integer) result));
         } else if (result instanceof Boolean) {
             printSuccessMessage((boolean) result ? "" : ALREADY_EXISTS);
-        } else if (result instanceof List) {
+        } else if (result instanceof Iterator) {
             SelectFromQuery select = (SelectFromQuery) query;
-            printSelectQueryResult(select.getAttributes(), (List<Map<SecondLevelId, Object>>) result);
+            printSelectQueryResult(select.getAttributes(), (Iterator<Map<SecondLevelId, Object>>) result);
         } else {
             printFailureMessage("unexpected type of result");
         }
     }
 
     private void printSelectQueryResult(@NotNull List<String> attributesList,
-                                        @NotNull List<Map<SecondLevelId, Object>> result) {
-        if (!result.isEmpty()) {
-            Set<SecondLevelId> attributes = getSelectedAttributes(attributesList, result.get(0).keySet());
+                                        @NotNull Iterator<Map<SecondLevelId, Object>> result) {
+        if (result.hasNext()) {
+            Map<SecondLevelId, Object> row = result.next();
+            Set<SecondLevelId> attributes = getSelectedAttributes(attributesList, row.keySet());
 
             for (SecondLevelId attribute : attributes) {
-                getStdOut().print(attribute + "\t");
+                stdOut.print(attribute + "\t");
             }
             stdOut.println();
             stdOut.flush();
 
-            for (Map<SecondLevelId, Object> row : result) {
-                for (SecondLevelId attribute : attributes) {
-                    getStdOut().print(row.get(attribute) + "\t");
-                }
+            printRow(row, attributes);
+            while (result.hasNext()) {
+                printRow(result.next(), attributes);
             }
         } else {
             stdOut.println(NO_ROW_SELECTED);
+        }
+
+        stdOut.println();
+        stdOut.flush();
+    }
+
+    private void printRow(@NotNull Map<SecondLevelId, Object> row, @NotNull Set<SecondLevelId> attributes) {
+        for (SecondLevelId attribute : attributes) {
+            stdOut.print(row.get(attribute) + "\t");
         }
 
         stdOut.println();
