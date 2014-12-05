@@ -1,6 +1,16 @@
 package ru.spbau.tinydb.tinyDatabase;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
 import org.jetbrains.annotations.NotNull;
+
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.metainformation.MetaInformationTable;
@@ -12,18 +22,8 @@ import ru.spbau.tinydb.queries.Attribute.VarcharType;
 import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.table.Table;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
 /**
- * tiny_database
- * Created by Sergey on 08.11.2014.
+ * tiny_database Created by Sergey on 08.11.2014.
  */
 public class TinyDatabase implements Closeable {
 
@@ -48,33 +48,44 @@ public class TinyDatabase implements Closeable {
     }
 
     @NotNull
-    public Iterator<Map<SecondLevelId, Object>> selectAll(String name) {
-        Table table = metaInf.loadTable(name);
+    public Iterator<Map<SecondLevelId, Object>> selectAll(String name) throws DBException {
+        Table table = findTable(name);
         return table.iterator();
     }
 
-    public void insertRecord(@NotNull String tableName, @NotNull List<String> attrs, @NotNull List<Object> record) throws DBException {
-        Table table = metaInf.loadTable(tableName);
+    public void insertRecord(@NotNull String tableName,
+            @NotNull List<String> attrs, @NotNull List<Object> record)
+            throws DBException {
+        Table table = findTable(tableName);
 
         Collection<Attribute> schema = table.getSchema();
         Object[] row = new Object[schema.size()];
-        
+
         int i = 0;
-        for(Attribute attr: schema) {
-        	int idx = attrs.indexOf(attr.getAttributeName());
-        	if(idx == -1) {
-        		row[i] = getDefault(attr.getDataType());
-        	} else {
-        		row[i] = record.get(idx);
-        	}
-        	i += 1;
+        for (Attribute attr : schema) {
+            int idx = attrs.indexOf(attr.getAttributeName());
+            if (idx == -1) {
+                row[i] = getDefault(attr.getDataType());
+            } else {
+                row[i] = record.get(idx);
+            }
+            i += 1;
         }
-        
+
         try {
             table.insertRecord(row);
         } catch (UnsupportedEncodingException | ExecutionException e) {
             throw new DBException(e);
         }
+    }
+
+    private Table findTable(String tableName) {
+        Table table = metaInf.loadTable(tableName);
+
+        if (table == null) {
+            throw new DBException("Table " + tableName + " doesn't exist");
+        }
+        return table;
     }
 
     private Object getDefault(DataType dataType) {
@@ -89,9 +100,10 @@ public class TinyDatabase implements Closeable {
         }
 
         throw new DBException("Unsupported attribute type");
-	}
+    }
 
-	public boolean createTable(@NotNull String tableName, @NotNull Collection<Attribute> schema) throws DBException {
+    public boolean createTable(@NotNull String tableName,
+            @NotNull Collection<Attribute> schema) throws DBException {
         Table table = metaInf.loadTable(tableName);
 
         if (table == null) {
@@ -107,10 +119,10 @@ public class TinyDatabase implements Closeable {
         }
     }
 
-	@NotNull
-	public Collection<Attribute> getTableSchema(String tableName) {
-		return metaInf.loadTable(tableName).getSchema();
-	}
+    @NotNull
+    public Collection<Attribute> getTableSchema(String tableName) {
+        return metaInf.loadTable(tableName).getSchema();
+    }
 
     @Override
     public void close() throws IOException {
