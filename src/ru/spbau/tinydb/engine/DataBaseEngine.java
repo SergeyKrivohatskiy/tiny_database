@@ -6,6 +6,7 @@ import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.metainformation.MetaInformationTable;
 import ru.spbau.tinydb.queries.Attribute;
 import ru.spbau.tinydb.queries.SecondLevelId;
+import ru.spbau.tinydb.queries.WhereCondition;
 import ru.spbau.tinydb.table.Table;
 
 import java.io.UnsupportedEncodingException;
@@ -65,8 +66,23 @@ public class DataBaseEngine implements AutoCloseable {
             return findTable(tableName).iterator();
         }
 
-        public void insertRecord(@NotNull String tableName,
-                                 @NotNull List<String> attrs, @NotNull List<Object> record)
+        @Override
+        public int delete(@NotNull String tableName, @NotNull WhereCondition filter) throws DBException {
+            Iterator<Map<SecondLevelId, Object>> selectAll = selectAll(tableName);
+            int result = 0;
+
+            while (selectAll.hasNext()) {
+                if (filter.check(selectAll.next())) {
+                    selectAll.remove();
+                    result += 1;
+                }
+            }
+
+            return result;
+        }
+
+        public int insert(@NotNull String tableName,
+                          @NotNull List<String> attrs, @NotNull List<Object> record)
                 throws DBException {
             Table table = findTable(tableName);
 
@@ -84,15 +100,18 @@ public class DataBaseEngine implements AutoCloseable {
                 i += 1;
             }
 
+            // TODO return correct value of affected rows
             try {
                 table.insertRecord(row);
+                return 1;
             } catch (UnsupportedEncodingException | ExecutionException | ClassCastException e) {
                 throw new DBException(e);
             }
         }
 
+        @NotNull
         @Override
-        public Table findTable(String tableName) {
+        public Table findTable(String tableName) throws DBException {
             Table table = metaInf.loadTable(tableName);
 
             if (table == null) {
