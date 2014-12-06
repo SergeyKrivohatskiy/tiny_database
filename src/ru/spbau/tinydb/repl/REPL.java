@@ -48,8 +48,8 @@ public class REPL {
         String outputFileName = getValue(args, OUTPUT_FILENAME_KEY);
         String errorsFileName = getValue(args, ERRORS_FILENAME_KEY);
 
-        return inputFileName != null ? new ScriptRunnable(dbFileName, inputFileName, outputFileName, errorsFileName) :
-                new ConsoleRunnable(dbFileName, outputFileName, errorsFileName);
+        return inputFileName != null ? new ScriptREPLRunnable(dbFileName, inputFileName, outputFileName, errorsFileName) :
+                new ConsoleREPLRunnable(dbFileName, outputFileName, errorsFileName);
     }
 
     @Nullable

@@ -14,7 +14,7 @@ import java.io.IOException;
 /**
  * @author adkozlov
  */
-public class ConsoleRunnable extends REPLRunnable<String> {
+public class ConsoleREPLRunnable extends REPLRunnable<String> {
 
     private static final String SHELL_PREFIX = "$ ";
 
@@ -22,9 +22,9 @@ public class ConsoleRunnable extends REPLRunnable<String> {
     private static final String CONNECT_COMMAND = COMMAND_PREFIX + "connect";
     private static final String QUIT_COMMAND = COMMAND_PREFIX + "quit";
 
-    protected ConsoleRunnable(@NotNull String dbFileName,
-                              @Nullable String outputFileName,
-                              @Nullable String errorsFileName) throws FileNotFoundException {
+    protected ConsoleREPLRunnable(@NotNull String dbFileName,
+                                  @Nullable String outputFileName,
+                                  @Nullable String errorsFileName) throws FileNotFoundException {
         super(dbFileName, System.in, outputFileName, errorsFileName);
     }
 
@@ -34,7 +34,7 @@ public class ConsoleRunnable extends REPLRunnable<String> {
             printShell();
 
             String queryString = readQuery();
-            if (queryString == null) {
+            if (queryString == null || queryString.equals("")) {
                 continue;
             } else if (queryString.equals(QUIT_COMMAND)) {
                 return;

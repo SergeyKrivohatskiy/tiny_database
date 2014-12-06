@@ -15,23 +15,23 @@ import java.util.List;
 /**
  * @author adkozlov
  */
-public class ScriptRunnable extends REPLRunnable<FileInputStream> {
+public class ScriptREPLRunnable extends REPLRunnable<FileInputStream> {
 
     @NotNull
     private final FileInputStream fileInputStream;
 
-    private ScriptRunnable(@NotNull String dbFileName,
-                           @NotNull FileInputStream fileInputStream,
-                           @Nullable String outputFileName,
-                           @Nullable String errorsFileName) throws FileNotFoundException {
+    private ScriptREPLRunnable(@NotNull String dbFileName,
+                               @NotNull FileInputStream fileInputStream,
+                               @Nullable String outputFileName,
+                               @Nullable String errorsFileName) throws FileNotFoundException {
         super(dbFileName, fileInputStream, outputFileName, errorsFileName);
         this.fileInputStream = fileInputStream;
     }
 
-    public ScriptRunnable(@NotNull String dbFileName,
-                          @NotNull String inputFileName,
-                          @Nullable String outputFileName,
-                          @Nullable String errorsFileName) throws FileNotFoundException {
+    public ScriptREPLRunnable(@NotNull String dbFileName,
+                              @NotNull String inputFileName,
+                              @Nullable String outputFileName,
+                              @Nullable String errorsFileName) throws FileNotFoundException {
         this(dbFileName, new FileInputStream(inputFileName), outputFileName, errorsFileName);
     }
 

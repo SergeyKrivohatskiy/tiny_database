@@ -21,11 +21,11 @@ import java.util.*;
  */
 public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
 
-    private static final String SUCCESS_MESSAGE_FORMAT = "OK\n%s\n";
+    private static final String SUCCESS_MESSAGE_FORMAT = "OK%s\n";
     private static final String FAILURE_MESSAGE_FORMAT = "ERROR\n%s\n";
 
-    private static final String ROWS_AFFECTED_FORMAT = "%d rows affected";
-    private static final String ALREADY_EXISTS = "already exists, not created";
+    private static final String ROWS_AFFECTED_FORMAT = "\n%d rows affected";
+    private static final String ALREADY_EXISTS = "\nalready exists, not created";
     private static final String NO_ROW_SELECTED = "no row selected";
 
     @NotNull
@@ -144,7 +144,6 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
             for (SecondLevelId attribute : attributes) {
                 stdOut.print(attribute + "\t");
             }
-            stdOut.println();
             stdOut.flush();
 
             printRow(row, attributes);
@@ -152,7 +151,7 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
                 printRow(result.next(), attributes);
             }
         } else {
-            stdOut.println(NO_ROW_SELECTED);
+            stdOut.print(NO_ROW_SELECTED);
         }
 
         stdOut.println();
@@ -160,11 +159,11 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
     }
 
     private void printRow(@NotNull Map<SecondLevelId, Object> row, @NotNull Set<SecondLevelId> attributes) {
+        stdOut.println();
         for (SecondLevelId attribute : attributes) {
             stdOut.print(row.get(attribute) + "\t");
         }
 
-        stdOut.println();
         stdOut.flush();
     }
 
