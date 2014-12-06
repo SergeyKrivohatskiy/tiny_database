@@ -198,7 +198,9 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
     }
 
     protected void handleException(@NotNull Exception e) {
-        printFailureMessage(e.getMessage());
+        String message = e.getMessage();
+
+        printFailureMessage(message != null ? message : e.toString());
     }
 
     @NotNull
