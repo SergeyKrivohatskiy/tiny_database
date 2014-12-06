@@ -1,7 +1,12 @@
 package ru.spbau.tinydb.queries;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import org.jetbrains.annotations.NotNull;
+
 import ru.spbau.tinydb.common.DBException;
+import ru.spbau.tinydb.cursors.WhereCursor;
 import ru.spbau.tinydb.engine.IDataBase;
 
 /**
@@ -20,7 +25,17 @@ public class DeleteFromQuery extends TableNameContainer implements IQuery<Intege
     @Override
     @NotNull
     public Integer execute(@NotNull IDataBase instance) throws DBException {
-        throw new DBException(new UnsupportedOperationException("unsupported delete operation"));
+        Iterator<Map<SecondLevelId, Object>> selectAll = instance.selectAll(getTableName());
+        int removed = 0;
+       
+        while(selectAll.hasNext()) {
+            if(filter.check(selectAll.next())) {
+                selectAll.remove();
+                removed += 1;
+            }
+        }
+        
+        return removed;
     }
 
     @NotNull

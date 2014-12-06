@@ -2,6 +2,7 @@ package ru.spbau.tinydb.table;
 
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.bufferManager.BufferView;
+import ru.spbau.tinydb.common.DBException;
 
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
@@ -215,7 +216,7 @@ public class TableBase implements Iterable<BufferView> {
 
             @Override
             public void remove() {
-                throw new UnsupportedOperationException();
+                throw new DBException("remove is not implemented");
             }
         };
     }

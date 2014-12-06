@@ -1,5 +1,6 @@
 package ru.spbau.tinydb.cursors;
 
+import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.expressions.comparison.JoinOnExpression;
 import ru.spbau.tinydb.queries.SecondLevelId;
 
@@ -67,6 +68,6 @@ public class NLJoinCursor implements Iterator<Map<SecondLevelId, Object>> {
 
     @Override
     public void remove() {
-        throw new UnsupportedOperationException();
+        throw new DBException("Remove is not implemented for NLJoin cursor");
     }
 }

@@ -2,6 +2,8 @@ package ru.spbau.tinydb.cursors;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.queries.WhereCondition;
 
@@ -58,6 +60,6 @@ public class WhereCursor implements Iterator<Map<SecondLevelId, Object>> {
 
     @Override
     public void remove() {
-        baseCursor.remove();
+        throw new DBException("Remove is not implemented for where cursor");
     }
 }
