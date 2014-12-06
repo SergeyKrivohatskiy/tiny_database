@@ -24,7 +24,8 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
     private static final String SUCCESS_MESSAGE_FORMAT = "OK%s\n";
     private static final String FAILURE_MESSAGE_FORMAT = "ERROR\n%s\n";
 
-    private static final String ROWS_AFFECTED_FORMAT = "\n%d rows affected";
+    private static final String PLURAL_FORM_SUFFIX = "s";
+    private static final String ROWS_AFFECTED_FORMAT = "\n%d row%s affected";
     private static final String ALREADY_EXISTS = "\nalready exists, not created";
     private static final String NO_ROW_SELECTED = "no row selected";
 
@@ -124,7 +125,7 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
 
     private void printQueryResult(@NotNull IQuery query, @NotNull Object result) {
         if (result instanceof Integer) {
-            printSuccessMessage(String.format(ROWS_AFFECTED_FORMAT, (Integer) result));
+            printSuccessMessage(rowsAffectedFormat((Integer) result));
         } else if (result instanceof Boolean) {
             printSuccessMessage((boolean) result ? "" : ALREADY_EXISTS);
         } else if (result instanceof Iterator) {
@@ -133,6 +134,11 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
         } else {
             printFailureMessage("unexpected type of result");
         }
+    }
+
+    @NotNull
+    private String rowsAffectedFormat(int result) {
+        return String.format(ROWS_AFFECTED_FORMAT, result, result % 10 == 1 ? "" : PLURAL_FORM_SUFFIX);
     }
 
     private void printSelectQueryResult(@NotNull List<String> attributesList,
