@@ -29,7 +29,7 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
     private static final String NO_ROW_SELECTED = "no row selected";
 
     @NotNull
-    private final String dbFileName;
+    private String dbFileName;
     @NotNull
     private final BufferedReader stdIn;
     @NotNull
@@ -71,6 +71,10 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
     @NotNull
     public String getDbFileName() {
         return dbFileName;
+    }
+
+    public void setDbFileName(@NotNull String dbFileName) {
+        this.dbFileName = dbFileName;
     }
 
     @NotNull

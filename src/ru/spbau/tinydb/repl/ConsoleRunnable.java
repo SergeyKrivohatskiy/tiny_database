@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.spbau.tinydb.common.DBException;
+import ru.spbau.tinydb.engine.DataBaseEngine;
 import ru.spbau.tinydb.grammar.SQLGrammarParser;
 import ru.spbau.tinydb.queries.IQuery;
 
@@ -16,7 +17,10 @@ import java.io.IOException;
 public class ConsoleRunnable extends REPLRunnable<String> {
 
     private static final String SHELL_PREFIX = "$ ";
-    private static final String QUIT_COMMAND = "quit()";
+
+    private static final String COMMAND_PREFIX = "\\";
+    private static final String CONNECT_COMMAND = COMMAND_PREFIX + "connect";
+    private static final String QUIT_COMMAND = COMMAND_PREFIX + "quit";
 
     protected ConsoleRunnable(@NotNull String dbFileName,
                               @Nullable String outputFileName,
@@ -26,7 +30,7 @@ public class ConsoleRunnable extends REPLRunnable<String> {
 
     @Override
     public void innerRun() {
-        while (!Thread.interrupted()) {
+        while (true) {
             printShell();
 
             String queryString = readQuery();
@@ -34,12 +38,28 @@ public class ConsoleRunnable extends REPLRunnable<String> {
                 continue;
             } else if (queryString.equals(QUIT_COMMAND)) {
                 return;
+            } else if (queryString.startsWith(CONNECT_COMMAND)) {
+                setDbFileName(queryString.replace(CONNECT_COMMAND, "").trim());
+                continue;
             }
 
             IQuery query = parseQuery(queryString);
             if (query != null) {
                 executeAndPrintResult(query);
             }
+        }
+    }
+
+    @Override
+    public void setDbFileName(@NotNull String dbFileName) {
+        try {
+            DataBaseEngine.getDBInstance(getDbFileName()).flush();
+
+            DataBaseEngine.getDBInstance(dbFileName);
+
+            super.setDbFileName(dbFileName);
+        } catch (DBException e) {
+            getStdErr().println(e.getMessage());
         }
     }
 
@@ -53,7 +73,7 @@ public class ConsoleRunnable extends REPLRunnable<String> {
                 result.append(line);
             }
 
-            return result.toString();
+            return result.toString().trim();
         } catch (IOException e) {
             handleException(e);
         }
