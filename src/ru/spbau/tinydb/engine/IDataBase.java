@@ -24,4 +24,6 @@ public interface IDataBase extends AutoCloseable {
 
     public boolean createTable(@NotNull String tableName,
                                @NotNull Collection<Attribute> schema) throws DBException;
+
+    public void flush();
 }

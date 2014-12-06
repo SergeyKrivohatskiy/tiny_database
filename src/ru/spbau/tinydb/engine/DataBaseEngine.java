@@ -8,7 +8,6 @@ import ru.spbau.tinydb.queries.Attribute;
 import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.table.Table;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -138,10 +137,11 @@ public class DataBaseEngine implements AutoCloseable {
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() throws Exception {
             flush();
         }
 
+        @Override
         public void flush() {
             bufferManager.flushBuffer();
         }
