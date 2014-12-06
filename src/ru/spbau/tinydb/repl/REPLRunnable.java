@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.spbau.tinydb.common.DBANTLRErrorListener;
 import ru.spbau.tinydb.common.DBException;
+import ru.spbau.tinydb.engine.DataBaseEngine;
 import ru.spbau.tinydb.grammar.SQLGrammarLexer;
 import ru.spbau.tinydb.grammar.SQLGrammarParser;
 import ru.spbau.tinydb.queries.IQuery;
@@ -94,6 +95,7 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
         try (REPLRunnable runnable = this) {
             innerRun();
         } catch (Exception e) {
+            stdErr.println(e.getMessage());
         }
     }
 
@@ -106,9 +108,9 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
     }
 
     @Nullable
-    private final Object executeQuery(@NotNull IQuery query) {
+    private Object executeQuery(@NotNull IQuery query) {
         try {
-            return query.execute();
+            return query.execute(DataBaseEngine.getDBInstance(dbFileName));
         } catch (DBException e) {
             handleException(e);
         }

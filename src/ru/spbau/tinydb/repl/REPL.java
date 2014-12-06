@@ -2,10 +2,9 @@ package ru.spbau.tinydb.repl;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.spbau.tinydb.tinyDatabase.TinyDatabase;
+import ru.spbau.tinydb.engine.DataBaseEngine;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,8 +30,8 @@ public class REPL {
             @Override
             public void run() {
                 try {
-                    TinyDatabase.getInstance().close();
-                } catch (IOException e) {
+                    DataBaseEngine.getInstance().close();
+                } catch (Exception e) {
                     System.err.println(e.getMessage());
                 }
             }
