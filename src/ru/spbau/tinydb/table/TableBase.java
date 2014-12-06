@@ -16,8 +16,11 @@ public class TableBase implements Iterable<BufferView> {
     private final int recordsPerPage;
     private final int recordSize;
     private final int bitSetSize;
+    // Header {
     private int firstFullPage;
     private int firstNotFullPage;
+    private int rowsCount;
+    // } Header
 
     public TableBase(BufferManager bufferManager, int firstPage, int recordSize) {
         this.bufferManager = bufferManager;
@@ -25,6 +28,7 @@ public class TableBase implements Iterable<BufferView> {
         this.recordSize = recordSize;
         firstFullPage = 0;
         firstNotFullPage = 0;
+        rowsCount = 0;
         recordsPerPage = (int)(8 * (BufferManager.PAGE_SIZE - POINTERS_SIZE)) / (8 * recordSize + 1);
         bitSetSize = (recordsPerPage + 7) / 8;
         loadHeader();
@@ -35,6 +39,7 @@ public class TableBase implements Iterable<BufferView> {
         try (BufferView firstPageView = bufferManager.getPage(firstPage)) {
             firstPageView.setInt(0, firstNotFullPage);
             firstPageView.setInt(4, firstFullPage);
+            firstPageView.setInt(8, rowsCount);
             firstPageView.setChanged();
         }
 
@@ -44,6 +49,7 @@ public class TableBase implements Iterable<BufferView> {
         try (BufferView firstPageView = bufferManager.getPage(firstPage)) {
             firstNotFullPage = firstPageView.getInt(0);
             firstFullPage = firstPageView.getInt(4);
+            rowsCount = firstPageView.getInt(8);
         }
     }
 
@@ -56,8 +62,6 @@ public class TableBase implements Iterable<BufferView> {
             firstNotFullPage = bufferManager.getFreePage();
             writeHeader();
             pageView = bufferManager.getPage(firstNotFullPage);
-            //TODO fix
-            //Arrays.fill(pageView.getByteBuffer().array(), (byte) 0);
             pageView.setChanged();
         } else {
             pageView = bufferManager.getPage(firstNotFullPage);
@@ -72,7 +76,7 @@ public class TableBase implements Iterable<BufferView> {
         // Hand made BitSet
         for(recordPosition = 0; (bitSetView.getByte(recordPosition / 8) & (1 << (recordPosition % 8))) != 0; recordPosition ++) {
             if(recordPosition >= recordsPerPage) {
-                throw new RuntimeException();
+                throw new RuntimeException("No empty position when page is not full");
             }
         }
         bitSetView.setByte(recordPosition / 8, (byte) (bitSetView.getByte(recordPosition / 8) | (1 << (recordPosition % 8))));
@@ -121,6 +125,8 @@ public class TableBase implements Iterable<BufferView> {
 
         pageView.setChanged();
         pageView.close();
+        rowsCount += 1;
+        writeHeader();
         return pageIndex * recordsPerPage + recordPosition;
     }
 
