@@ -99,7 +99,7 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
         try (REPLRunnable runnable = this) {
             innerRun();
         } catch (Exception e) {
-            stdErr.println(e.getMessage());
+            handleException(e);
         }
     }
 

@@ -42,7 +42,9 @@ public class ScriptREPLRunnable extends REPLRunnable<FileInputStream> {
         if (queries != null) {
             for (IQuery query : queries) {
                 executeAndPrintResult(query);
+
                 getStdOut().println();
+                getStdOut().flush();
             }
         }
     }
