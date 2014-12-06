@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Created by Sergey on 27.10.2014.
  */
-public class TableBase implements Iterable<BufferView> {
+public class TableBase implements Iterable<ViewWithId> {
     private final static int POINTERS_SIZE = 8;
     private final BufferManager bufferManager;
     private final int firstPage;
@@ -167,16 +167,16 @@ public class TableBase implements Iterable<BufferView> {
         }
     }
 
-    public Iterator<BufferView> iterator() {
-        return new Iterator<BufferView>() {
+    public Iterator<ViewWithId> iterator() {
+        return new Iterator<ViewWithId>() {
             private int curPageNotFull = firstNotFullPage;
             private int curPageFull = firstFullPage;
             private int recordPos = 0;
             private int lastRecordId = -1;
             private int currentRecordId = -1;
-            private BufferView value = getNextView();
+            private ViewWithId value = getNextView();
 
-            private BufferView getNextView() {
+            private ViewWithId getNextView() {
                 lastRecordId = currentRecordId;
                 BufferView pageView;
                 boolean found;
@@ -224,7 +224,7 @@ public class TableBase implements Iterable<BufferView> {
                 BufferView recordView = pageView.getSubView(POINTERS_SIZE + bitSetSize + recordPos * recordSize, recordSize);
                 recordPos += 1;
                 pageView.close();
-                return recordView;
+                return new ViewWithId(recordView, currentRecordId);
             }
 
             @Override
@@ -233,11 +233,11 @@ public class TableBase implements Iterable<BufferView> {
             }
 
             @Override
-            public BufferView next() {
+            public ViewWithId next() {
                 if(!hasNext()) {
                     throw new IllegalStateException();
                 }
-                BufferView old = value;
+                ViewWithId old = value;
                 value = getNextView();
                 return old;
             }

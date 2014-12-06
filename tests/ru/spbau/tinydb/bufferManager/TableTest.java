@@ -1,11 +1,11 @@
 package ru.spbau.tinydb.bufferManager;
 
 import ru.spbau.tinydb.bufferManager.BufferManager;
-import ru.spbau.tinydb.bufferManager.BufferView;
 import ru.spbau.tinydb.queries.Attribute;
 import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.table.Table;
 import ru.spbau.tinydb.table.TableBase;
+import ru.spbau.tinydb.table.ViewWithId;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -70,12 +70,12 @@ public class TableTest {
         }
 
         int i = 0;
-        for(BufferView recordView: table) {
+        for(ViewWithId recordView: table) {
             i++;
-            if(recordView.getByte(0) != 7) {
+            if(recordView.getView().getByte(0) != 7) {
                 throw new RuntimeException();
             }
-            recordView.close();
+            recordView.getView().close();
         }
         if(i != COUNT) {
             throw new RuntimeException();

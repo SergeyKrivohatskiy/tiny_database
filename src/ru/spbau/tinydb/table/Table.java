@@ -136,7 +136,7 @@ public class Table implements Iterable<Map<SecondLevelId, Object>> {
 	@Override
     public Iterator<Map<SecondLevelId, Object>> iterator() {
         return new Iterator<Map<SecondLevelId, Object>>() {
-            private Iterator<BufferView> baseIterator = baseTable.iterator();
+            private Iterator<ViewWithId> baseIterator = baseTable.iterator();
 
             @Override
             public boolean hasNext() {
@@ -145,7 +145,7 @@ public class Table implements Iterable<Map<SecondLevelId, Object>> {
 
             @Override
             public Map<SecondLevelId, Object> next() {
-                try(BufferView recordView = baseIterator.next()) {
+                try(BufferView recordView = baseIterator.next().getView()) {
                     return getRecordFromView(recordView);
                 }
             }
