@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -20,7 +21,7 @@ public class BufferManager {
     public final static int METAINF_FIRST_PAGE = 1;
 
     private final RandomAccessFile dbFile;
-    private final byte[] buffer = new byte[(int) (PAGE_SIZE * BUFFER_SIZE)];
+    private final ByteBuffer buffer = ByteBuffer.allocate((int) (PAGE_SIZE * BUFFER_SIZE));
     // 'i' page is used now if 'i' bit is set
     private final BitSet bufferIsUsed = new BitSet(BUFFER_SIZE);
     // 'i' page was recently used if 'i' bit is set
@@ -111,7 +112,7 @@ public class BufferManager {
         try {
             int pageIndex = bufferPosToPageIdx[bufferPos];
             dbFile.seek(pageIndex * PAGE_SIZE);
-            dbFile.write(buffer, (int) (bufferPos * PAGE_SIZE), (int) PAGE_SIZE);
+            dbFile.write(buffer.array(), (int) (bufferPos * PAGE_SIZE), (int) PAGE_SIZE);
             bufferChanged.clear(bufferPos);
         } catch (IOException e) {
             throw new RuntimeException("IOException when writing page " + bufferPosToPageIdx[bufferPos] + " to " + bufferPos);
@@ -121,7 +122,7 @@ public class BufferManager {
     private void loadPage(int pageIndex, int bufferPos) {
         try {
             dbFile.seek(pageIndex * PAGE_SIZE);
-            dbFile.read(buffer, (int) (bufferPos * PAGE_SIZE), (int) PAGE_SIZE);
+            dbFile.read(buffer.array(), (int) (bufferPos * PAGE_SIZE), (int) PAGE_SIZE);
             bufferPosToPageIdx[bufferPos] = pageIndex;
             pageIdxToBufferPos.put(pageIndex, bufferPos);
         } catch (IOException e) {
