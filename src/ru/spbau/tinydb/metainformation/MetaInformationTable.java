@@ -2,6 +2,7 @@ package ru.spbau.tinydb.metainformation;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.queries.Attribute;
@@ -9,6 +10,7 @@ import ru.spbau.tinydb.queries.Attribute.DoubleType;
 import ru.spbau.tinydb.queries.Attribute.IntegerType;
 import ru.spbau.tinydb.queries.Attribute.VarcharType;
 import ru.spbau.tinydb.queries.SecondLevelId;
+import ru.spbau.tinydb.table.Record;
 import ru.spbau.tinydb.table.Table;
 
 import java.io.UnsupportedEncodingException;
@@ -48,15 +50,16 @@ public class MetaInformationTable {
         int attributesCount = 0;
         int firstPage = 0;
         Collection<Attribute> attributes = null;
-        for(Map<SecondLevelId, Object> row: table) {
+        for(Record rec: table) {
+            Map<SecondLevelId, Object> recAtributes = rec.getAtributes();
             if(ignore != 0) {
                 ignore -= 1;
                 continue;
             }
-            String currName = (String) row.get(NAME_ID);
+            String currName = (String) recAtributes.get(NAME_ID);
             if(attributes != null) {
                 attributesCount -= 1;
-                Attribute.DataType type = integersToType(row);
+                Attribute.DataType type = integersToType(recAtributes);
                 attributes.add(new Attribute(currName, type));
                 if(attributesCount == 0) {
                     return new Table(bufferManager, firstPage, attributes, name);
@@ -64,12 +67,12 @@ public class MetaInformationTable {
                 continue;
             }
             if(!name .equals(currName)) {
-                ignore = (Integer)row.get(VAL2_ID);
+                ignore = (Integer)recAtributes.get(VAL2_ID);
                 continue;
             }
             attributes = new ArrayList<>();
-            attributesCount = (Integer)row.get(VAL2_ID);
-            firstPage = (Integer)row.get(VAL1_ID);
+            attributesCount = (Integer)recAtributes.get(VAL2_ID);
+            firstPage = (Integer)recAtributes.get(VAL1_ID);
         }
 
         return null;

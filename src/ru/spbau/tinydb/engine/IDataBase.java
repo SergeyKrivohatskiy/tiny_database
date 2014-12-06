@@ -1,9 +1,11 @@
 package ru.spbau.tinydb.engine;
 
 import org.jetbrains.annotations.NotNull;
+
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.queries.Attribute;
 import ru.spbau.tinydb.queries.SecondLevelId;
+import ru.spbau.tinydb.queries.SelectionTable;
 import ru.spbau.tinydb.queries.WhereCondition;
 
 import java.util.Collection;
@@ -16,9 +18,6 @@ import java.util.Map;
  */
 public interface IDataBase extends AutoCloseable {
 
-    @NotNull
-    public Iterator<Map<SecondLevelId, Object>> selectAll(@NotNull String tableName) throws DBException;
-
     public int insert(@NotNull String tableName, @NotNull List<String> attributes, @NotNull List<Object> record)
             throws DBException;
 
@@ -29,6 +28,6 @@ public interface IDataBase extends AutoCloseable {
 
     public void flush();
 
-    @NotNull
-    Iterable<Map<SecondLevelId, Object>> findTable(String tableName) throws DBException;
+    public Iterator<Map<SecondLevelId, Object>> select(SelectionTable table,
+            WhereCondition filter);
 }

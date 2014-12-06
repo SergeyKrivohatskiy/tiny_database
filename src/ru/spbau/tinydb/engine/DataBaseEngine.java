@@ -1,12 +1,19 @@
 package ru.spbau.tinydb.engine;
 
 import org.jetbrains.annotations.NotNull;
+
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.common.DBException;
+import ru.spbau.tinydb.cursors.NLJoinCursor;
+import ru.spbau.tinydb.cursors.AtributesCursor;
+import ru.spbau.tinydb.cursors.WhereCursor;
+import ru.spbau.tinydb.expressions.comparison.JoinOnExpression;
 import ru.spbau.tinydb.metainformation.MetaInformationTable;
 import ru.spbau.tinydb.queries.Attribute;
 import ru.spbau.tinydb.queries.SecondLevelId;
+import ru.spbau.tinydb.queries.SelectionTable;
 import ru.spbau.tinydb.queries.WhereCondition;
+import ru.spbau.tinydb.table.Record;
 import ru.spbau.tinydb.table.Table;
 
 import java.io.UnsupportedEncodingException;
@@ -61,24 +68,21 @@ public class DataBaseEngine implements AutoCloseable {
             metaInf = new MetaInformationTable(bufferManager);
         }
 
-        @NotNull
-        public Iterator<Map<SecondLevelId, Object>> selectAll(@NotNull String tableName) throws DBException {
-            return findTable(tableName).iterator();
-        }
-
         @Override
         public int delete(@NotNull String tableName, @NotNull WhereCondition filter) throws DBException {
-            Iterator<Map<SecondLevelId, Object>> selectAll = selectAll(tableName);
-            int result = 0;
+            Table table = findTable(tableName);
+            Iterator<Record> recordIterator = new WhereCursor(table.iterator(), filter);
+            int removed = 0;
 
-            while (selectAll.hasNext()) {
-                if (filter.check(selectAll.next())) {
-                    selectAll.remove();
-                    result += 1;
+            while (recordIterator.hasNext()) {
+                Record record = recordIterator.next();
+                if (filter.check(record.getAtributes())) {
+                    table.remove(record.getRecordId());
+                    removed += 1;
                 }
             }
 
-            return result;
+            return removed;
         }
 
         public int insert(@NotNull String tableName,
@@ -110,8 +114,7 @@ public class DataBaseEngine implements AutoCloseable {
         }
 
         @NotNull
-        @Override
-        public Table findTable(String tableName) throws DBException {
+        private Table findTable(String tableName) throws DBException {
             Table table = metaInf.loadTable(tableName);
 
             if (table == null) {
@@ -164,6 +167,23 @@ public class DataBaseEngine implements AutoCloseable {
         @Override
         public void flush() {
             bufferManager.flushBuffer();
+        }
+
+        @Override
+        public Iterator<Map<SecondLevelId, Object>> select(
+                SelectionTable table, WhereCondition filter) {
+            Iterator<Record> recordCursor = new WhereCursor(findTable(table.getTableName()).iterator(), filter);
+            Iterator<Map<SecondLevelId, Object>> resultCursor = new AtributesCursor(recordCursor);
+            for(JoinOnExpression joinExpresion: table.getExpressions()) {
+                Table joinTable = findTable(joinExpresion.getTableName());
+                resultCursor = new NLJoinCursor(resultCursor, new Iterable<Map<SecondLevelId,Object>>() {
+                    @Override
+                    public Iterator<Map<SecondLevelId, Object>> iterator() {
+                        return new AtributesCursor(joinTable.iterator());
+                    }
+                }, joinExpresion);
+            }
+            return resultCursor;
         }
     }
 }

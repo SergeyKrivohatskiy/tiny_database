@@ -4,40 +4,38 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import ru.spbau.tinydb.common.DBException;
-import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.queries.WhereCondition;
+import ru.spbau.tinydb.table.Record;
 
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * tiny_database
  * Created by Sergey on 09.11.2014.
  */
-public class WhereCursor implements Iterator<Map<SecondLevelId, Object>> {
+public class WhereCursor implements Iterator<Record> {
 
     @NotNull
-    private final Iterator<Map<SecondLevelId, Object>> baseCursor;
+    private final Iterator<Record> baseCursor;
     @Nullable
     private final WhereCondition condition;
     @Nullable
-    private Map<SecondLevelId, Object> values;
+    private Record record;
 
-    public WhereCursor(@NotNull Iterator<Map<SecondLevelId, Object>> baseCursor, @Nullable WhereCondition condition) {
+    public WhereCursor(@NotNull Iterator<Record> baseCursor, @Nullable WhereCondition condition) {
         this.baseCursor = baseCursor;
         this.condition = condition;
 
-        values = getValues();
+        record = getValues();
     }
 
     @Nullable
-    private Map<SecondLevelId, Object> getValues() {
+    private Record getValues() {
         while (baseCursor.hasNext()) {
-            Map<SecondLevelId, Object> values = baseCursor.next();
+            Record values = baseCursor.next();
 
-            if (condition == null || condition.check(values)) {
-                return Collections.unmodifiableMap(values);
+            if (condition == null || condition.check(values.getAtributes())) {
+                return values;
             }
         }
 
@@ -46,16 +44,16 @@ public class WhereCursor implements Iterator<Map<SecondLevelId, Object>> {
 
     @Override
     public boolean hasNext() {
-        return values != null;
+        return record != null;
     }
 
     @Nullable
     @Override
-    public Map<SecondLevelId, Object> next() {
-        Map<SecondLevelId, Object> oldValues = values;
-        values = getValues();
+    public Record next() {
+        Record oldRecord = record;
+        record = getValues();
 
-        return oldValues;
+        return oldRecord;
     }
 
     @Override

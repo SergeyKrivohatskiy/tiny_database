@@ -3,6 +3,7 @@ package ru.spbau.tinydb.bufferManager;
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.queries.Attribute;
 import ru.spbau.tinydb.queries.SecondLevelId;
+import ru.spbau.tinydb.table.Record;
 import ru.spbau.tinydb.table.Table;
 import ru.spbau.tinydb.table.TableBase;
 import ru.spbau.tinydb.table.ViewWithId;
@@ -43,11 +44,12 @@ public class TableTest {
             table.insertRecord(record);
         }
         int i = 0;
-        for(Map<SecondLevelId, Object> rec: table) {
-			if ((Integer)rec.get(new SecondLevelId("name", "Test int attr")) != 123454) {
+        for(Record rec: table) {
+            Map<SecondLevelId, Object> recAtributes = rec.getAtributes();
+			if ((Integer)recAtributes.get(new SecondLevelId("name", "Test int attr")) != 123454) {
 				throw new RuntimeException();
 			}
-			if (!"value".equals(rec.get(new SecondLevelId("name", "Test varchar attr")))) {
+			if (!"value".equals(recAtributes.get(new SecondLevelId("name", "Test varchar attr")))) {
 				throw new RuntimeException();
 			}
             i++;

@@ -4,10 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import ru.spbau.tinydb.common.DBException;
-import ru.spbau.tinydb.cursors.NLJoinCursor;
-import ru.spbau.tinydb.cursors.WhereCursor;
 import ru.spbau.tinydb.engine.IDataBase;
-import ru.spbau.tinydb.expressions.comparison.JoinOnExpression;
 
 import java.util.*;
 
@@ -47,13 +44,7 @@ public class SelectFromQuery implements IQuery<Iterator<Map<SecondLevelId, Objec
     @Override
     @NotNull
     public Iterator<Map<SecondLevelId, Object>> execute(@NotNull IDataBase instance) throws DBException {
-
-        Iterator<Map<SecondLevelId, Object>> selectAll = instance.selectAll(getTable().getTableName());
-        Iterator<Map<SecondLevelId, Object>> resultCursor = new WhereCursor(selectAll, getFilter());
-        for(JoinOnExpression joinExpresion: table.getExpressions()) {
-            resultCursor = new NLJoinCursor(resultCursor, instance.findTable(joinExpresion.getTableName()), joinExpresion);
-        }
-        return resultCursor;
+        return instance.select(getTable(), getFilter());
     }
 
     @NotNull

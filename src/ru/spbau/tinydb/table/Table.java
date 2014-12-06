@@ -1,6 +1,7 @@
 package ru.spbau.tinydb.table;
 
 import org.jetbrains.annotations.NotNull;
+
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.bufferManager.BufferView;
 import ru.spbau.tinydb.common.DBException;
@@ -23,7 +24,7 @@ import java.util.concurrent.ExecutionException;
  * tiny_database
  * Created by Sergey on 08.11.2014.
  */
-public class Table implements Iterable<Map<SecondLevelId, Object>> {
+public class Table implements Iterable<Record> {
 
     @NotNull
     private final TableBase baseTable;
@@ -134,8 +135,8 @@ public class Table implements Iterable<Map<SecondLevelId, Object>> {
     }
 
 	@Override
-    public Iterator<Map<SecondLevelId, Object>> iterator() {
-        return new Iterator<Map<SecondLevelId, Object>>() {
+    public Iterator<Record> iterator() {
+        return new Iterator<Record>() {
             private Iterator<ViewWithId> baseIterator = baseTable.iterator();
 
             @Override
@@ -144,9 +145,11 @@ public class Table implements Iterable<Map<SecondLevelId, Object>> {
             }
 
             @Override
-            public Map<SecondLevelId, Object> next() {
-                try(BufferView recordView = baseIterator.next().getView()) {
-                    return getRecordFromView(recordView);
+            public Record next() {
+                ViewWithId viewWithId = baseIterator.next();
+                try(BufferView recordView = viewWithId.getView()) {
+                    Map<SecondLevelId, Object> value = getRecordFromView(recordView);
+                    return new Record(value, viewWithId.getId());
                 }
             }
 
