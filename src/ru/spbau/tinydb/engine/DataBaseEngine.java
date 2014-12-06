@@ -86,7 +86,7 @@ public class DataBaseEngine implements AutoCloseable {
 
             try {
                 table.insertRecord(row);
-            } catch (UnsupportedEncodingException | ExecutionException e) {
+            } catch (UnsupportedEncodingException | ExecutionException | ClassCastException e) {
                 throw new DBException(e);
             }
         }

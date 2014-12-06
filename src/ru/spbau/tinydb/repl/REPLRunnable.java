@@ -99,7 +99,7 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
         try (REPLRunnable runnable = this) {
             innerRun();
         } catch (Exception e) {
-            stdErr.println(e.getMessage());
+            handleException(e);
         }
     }
 
@@ -198,7 +198,9 @@ public abstract class REPLRunnable<Q> implements Runnable, AutoCloseable {
     }
 
     protected void handleException(@NotNull Exception e) {
-        printFailureMessage(e.getMessage());
+        String message = e.getMessage();
+
+        printFailureMessage(message != null ? message : e.toString());
     }
 
     @NotNull

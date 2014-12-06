@@ -59,7 +59,7 @@ public class ConsoleREPLRunnable extends REPLRunnable<String> {
 
             super.setDbFileName(dbFileName);
         } catch (DBException e) {
-            getStdErr().println(e.getMessage());
+            handleException(e);
         }
     }
 
