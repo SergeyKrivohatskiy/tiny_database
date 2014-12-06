@@ -36,10 +36,7 @@ public class InsertIntoQuery extends TableNameContainer implements IQuery<Intege
     @NotNull
     @Override
     public Integer execute(@NotNull IDataBase instance) throws DBException {
-        instance.insertRecord(getTableName(), getAttributes(), getValues());
-
-        // TODO return correct value of affected rows
-        return 1;
+        return instance.insert(getTableName(), getAttributes(), getValues());
     }
 
     @NotNull
