@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Sergey on 27.10.2014.
@@ -26,7 +28,8 @@ public class BufferManager {
     // 'i' page should be written to disk if 'i' bit is set
     private final BitSet bufferChanged = new BitSet(BUFFER_SIZE);
     private final int[] usedPages = new int[BUFFER_SIZE];
-    private final int[] pagesLoaded = new int[BUFFER_SIZE];
+    private final Map<Integer, Integer> pageIdxToBufferPos = new HashMap<>(); // pageIndex -> buffer position
+    private final int[] bufferPosToPageIdx = new int[BUFFER_SIZE]; // buffer position -> pageIndex  
     private int currentPos = -1;
     private int length;
 
@@ -45,7 +48,7 @@ public class BufferManager {
     }
 
     private void init() throws DBException {
-        Arrays.fill(pagesLoaded, -1);
+        Arrays.fill(bufferPosToPageIdx, -1);
         try {
             length = (int) (dbFile.length() / PAGE_SIZE);
             if(length == 0) {
@@ -75,11 +78,9 @@ public class BufferManager {
     }
 
     public BufferView getPage(int pageIndex) {
-        // TODO May be change to Map
-        for(int i = 0; i < BUFFER_SIZE; i++) {
-            if(pageIndex == pagesLoaded[i]) {
-                return new BufferView(buffer, i, (int) PAGE_SIZE, this);
-            }
+        if(pageIdxToBufferPos.containsKey(pageIndex)) {
+            int bufferPos = pageIdxToBufferPos.get(pageIndex);
+            return new BufferView(buffer, bufferPos, (int) PAGE_SIZE, this);
         }
         
         // Clock algorithm
@@ -100,19 +101,20 @@ public class BufferManager {
         if(bufferChanged.get(currentPos)) {
             writePage(currentPos);
         }
-        pagesLoaded[currentPos] = -1;
+        pageIdxToBufferPos.remove(bufferPosToPageIdx[currentPos]);
+        bufferPosToPageIdx[currentPos] = -1;
         loadPage(pageIndex, currentPos);
         return new BufferView(buffer, currentPos, (int) PAGE_SIZE, this);
     }
 
     private void writePage(int bufferPos) {
         try {
-            int pageIndex = pagesLoaded[bufferPos];
+            int pageIndex = bufferPosToPageIdx[bufferPos];
             dbFile.seek(pageIndex * PAGE_SIZE);
             dbFile.write(buffer, (int) (bufferPos * PAGE_SIZE), (int) PAGE_SIZE);
             bufferChanged.clear(bufferPos);
         } catch (IOException e) {
-            throw new RuntimeException("IOException when writing page " + pagesLoaded[bufferPos] + " to " + bufferPos);
+            throw new RuntimeException("IOException when writing page " + bufferPosToPageIdx[bufferPos] + " to " + bufferPos);
         }
     }
 
@@ -120,7 +122,8 @@ public class BufferManager {
         try {
             dbFile.seek(pageIndex * PAGE_SIZE);
             dbFile.read(buffer, (int) (bufferPos * PAGE_SIZE), (int) PAGE_SIZE);
-            pagesLoaded[bufferPos] = pageIndex;
+            bufferPosToPageIdx[bufferPos] = pageIndex;
+            pageIdxToBufferPos.put(pageIndex, bufferPos);
         } catch (IOException e) {
             throw new RuntimeException("IOException when reading page " + pageIndex + " to " + bufferPos);
         }
