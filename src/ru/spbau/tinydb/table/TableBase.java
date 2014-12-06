@@ -130,6 +130,28 @@ public class TableBase implements Iterable<BufferView> {
         writeHeader();
         return pageIndex * recordsPerPage + recordPosition;
     }
+    
+    public boolean remove(int recordId) {
+        // TODO find out the better way of removing. This requires index rebuilding(because this recordId may be reused)
+        int pageIndex = recordId / recordsPerPage;
+        int recordPosition = recordId % recordsPerPage;
+        try (BufferView pageView = bufferManager.getPage(pageIndex)) {
+            BufferView bitSetView = pageView.getSubView(POINTERS_SIZE, bitSetSize);
+            byte oldByte = bitSetView.getByte(recordPosition / 8);
+            boolean recordAvailable = (oldByte & 1 << (recordPosition % 8)) != 0;
+            // TODO test this
+            bitSetView.setByte(recordPosition / 8, (byte) (oldByte & ~(1 << (recordPosition % 8))));
+            bitSetView.close();
+            
+            if (!recordAvailable) {
+                return false;
+            }
+            
+            rowsCount -= 1;
+            writeHeader();
+            return true;
+        }
+    }
 
     public BufferView get(int recordId) throws ExecutionException {
         int pageIndex = recordId / recordsPerPage;
@@ -150,9 +172,12 @@ public class TableBase implements Iterable<BufferView> {
             private int curPageNotFull = firstNotFullPage;
             private int curPageFull = firstFullPage;
             private int recordPos = 0;
+            private int lastRecordId = -1;
+            private int currentRecordId = -1;
             private BufferView value = getNextView();
 
             private BufferView getNextView() {
+                lastRecordId = currentRecordId;
                 BufferView pageView;
                 boolean found;
                 do {
@@ -175,10 +200,13 @@ public class TableBase implements Iterable<BufferView> {
                         }
                         recordPos += 1;
                     }
+                    bitSetView.close();
                     if(recordPos == recordsPerPage) {
                         found = false;
+                    } else {
+                        int pageIndex = curPageNotFull != 0 ? curPageNotFull : curPageFull;
+                        currentRecordId = recordPos + recordsPerPage * pageIndex;
                     }
-                    bitSetView.close();
                     if(!found) {
                         recordPos = 0;
                         int newPage = pageView.getInt(4);
@@ -216,7 +244,11 @@ public class TableBase implements Iterable<BufferView> {
 
             @Override
             public void remove() {
-                throw new DBException("remove is not implemented");
+                if(lastRecordId == -1) {
+                    throw new DBException(new IllegalStateException("Remove from iterator before calling next"));
+                }
+                TableBase.this.remove(lastRecordId);
+                lastRecordId = -1;
             }
         };
     }
