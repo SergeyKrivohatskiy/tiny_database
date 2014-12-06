@@ -53,13 +53,13 @@ public class BufferManager {
             length = (int) (dbFile.length() / PAGE_SIZE);
             if(length == 0) {
                 increaseLength();
-                //writeHeader
+                //writeHeader(there is no header now)
                 increaseLength(); // for MetaInf Page
             } else {
-                // loadHeader
+                //loadHeader(there is no header now)
             }
         } catch (IOException e) {
-            throw new DBException("IOException in BufferManager init method");
+            throw new DBException("IOException in BufferManager init method(getting file lenght)");
         }
     }
 
@@ -68,7 +68,7 @@ public class BufferManager {
         try {
             dbFile.setLength(length * PAGE_SIZE);
         } catch (IOException e) {
-            throw new RuntimeException("IOException when increasing file size");
+            throw new RuntimeException("IOException when increasing file size. No space left");
         }
     }
 

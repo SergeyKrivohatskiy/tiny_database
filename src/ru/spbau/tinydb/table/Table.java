@@ -79,6 +79,10 @@ public class Table implements Iterable<Map<SecondLevelId, Object>> {
 
         return baseTable.insert(row);
     }
+    
+    public boolean remove(int recordId) {
+        return baseTable.remove(recordId);
+    }
 
     @NotNull
     private byte[] toByteArray(@NotNull Object object, @NotNull DataType dataType) throws UnsupportedEncodingException {
