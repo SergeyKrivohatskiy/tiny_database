@@ -1,6 +1,7 @@
 package ru.spbau.tinydb.engine;
 
 import org.jetbrains.annotations.NotNull;
+
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.queries.Attribute;
 import ru.spbau.tinydb.queries.SecondLevelId;
@@ -26,4 +27,6 @@ public interface IDataBase extends AutoCloseable {
                                @NotNull Collection<Attribute> schema) throws DBException;
 
     public void flush();
+
+    Iterable<Map<SecondLevelId, Object>> findTable(String tableName);
 }

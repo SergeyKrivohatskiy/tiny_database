@@ -91,7 +91,8 @@ public class DataBaseEngine implements AutoCloseable {
             }
         }
 
-        private Table findTable(String tableName) {
+        @Override
+        public Table findTable(String tableName) {
             Table table = metaInf.loadTable(tableName);
 
             if (table == null) {

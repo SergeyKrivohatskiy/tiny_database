@@ -1,30 +1,33 @@
 package ru.spbau.tinydb.cursors;
 
 import ru.spbau.tinydb.expressions.comparison.JoinOnExpression;
+import ru.spbau.tinydb.queries.SecondLevelId;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * tiny_database
  * Created by Sergey on 09.11.2014.
  */
-public class NLJoinCursor implements Iterator<Object[]> {
+public class NLJoinCursor implements Iterator<Map<SecondLevelId, Object>> {
 
-    private final Iterator<Object[]> firstCursor;
-    private Iterator<Object[]> secondCursor;
-    private final Iterable<Object[]> iterable;
+    private final Iterator<Map<SecondLevelId, Object>> firstCursor;
+    private Iterator<Map<SecondLevelId, Object>> secondCursor;
+    private final Iterable<Map<SecondLevelId, Object>> iterable;
     private final JoinOnExpression eqAttrs;
-    private Object[] value;
-    private Object[] firstVal;
+    private Map<SecondLevelId, Object> value;
+    private Map<SecondLevelId, Object> firstVal;
 
-    public NLJoinCursor(Iterator<Object[]> firstCursor, Iterable<Object[]> iterable, JoinOnExpression eqAttrs) {
+    public NLJoinCursor(Iterator<Map<SecondLevelId, Object>> firstCursor, Iterable<Map<SecondLevelId, Object>> iterable, JoinOnExpression eqAttrs) {
         this.firstCursor = firstCursor;
         this.iterable = iterable;
         this.eqAttrs = eqAttrs;
         value = getValue();
     }
 
-    private Object[] getValue() {
+    private Map<SecondLevelId, Object> getValue() {
         while(true) {
             if (firstVal == null && !firstCursor.hasNext()) {
                 return null;
@@ -34,32 +37,30 @@ public class NLJoinCursor implements Iterator<Object[]> {
                 secondCursor = iterable.iterator();
             }
             while (secondCursor.hasNext()) {
-            	Object[] val = join(firstVal, secondCursor.next());
-
-                // TODO implement
-//                if (eqAttrs.execute(val)) {
-//                    return val;
-//                }
+                Map<SecondLevelId, Object> val = join(firstVal, secondCursor.next());
+                if (eqAttrs.execute(val)) {
+                    return val;
+                }
             }
             firstVal = null;
         }
     }
 
-    private Object[] join(Object[] firstVal, Object[] secondVal) {
-        Object[] result = new Object[firstVal.length + secondVal.length];
-        System.arraycopy(firstVal, 0, result, 0, firstVal.length);
-        System.arraycopy(secondVal, 0, result, firstVal.length, secondVal.length);
-		return result ;
+    private Map<SecondLevelId, Object> join(Map<SecondLevelId, Object> firstVal, Map<SecondLevelId, Object> secondVal) {
+        Map<SecondLevelId, Object> result = new HashMap<>();
+        result.putAll(firstVal);
+        result.putAll(secondVal);
+        return result;
     }
-
+    
     @Override
     public boolean hasNext() {
         return value != null;
     }
 
     @Override
-    public Object[] next() {
-    	Object[] old = value;
+    public Map<SecondLevelId, Object> next() {
+        Map<SecondLevelId, Object> old = value;
         value = getValue();
         return old;
     }
