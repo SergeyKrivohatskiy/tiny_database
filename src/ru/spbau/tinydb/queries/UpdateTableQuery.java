@@ -2,6 +2,7 @@ package ru.spbau.tinydb.queries;
 
 import org.jetbrains.annotations.NotNull;
 import ru.spbau.tinydb.common.DBException;
+import ru.spbau.tinydb.engine.IDataBase;
 import ru.spbau.tinydb.expressions.AssignmentExpression;
 
 import java.util.Collections;
@@ -35,7 +36,7 @@ public class UpdateTableQuery extends TableNameContainer implements IQuery<Integ
 
     @NotNull
     @Override
-    public Integer execute() throws DBException {
+    public Integer execute(@NotNull IDataBase instance) throws DBException {
         throw new DBException(new UnsupportedOperationException("unsupported update table operation"));
     }
 

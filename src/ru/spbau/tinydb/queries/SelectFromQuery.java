@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.cursors.WhereCursor;
-import ru.spbau.tinydb.tinyDatabase.TinyDatabase;
+import ru.spbau.tinydb.engine.IDataBase;
 
 import java.util.*;
 
@@ -43,9 +43,9 @@ public class SelectFromQuery implements IQuery<Iterator<Map<SecondLevelId, Objec
 
     @Override
     @NotNull
-    public Iterator<Map<SecondLevelId, Object>> execute() throws DBException {
+    public Iterator<Map<SecondLevelId, Object>> execute(@NotNull IDataBase instance) throws DBException {
         // TODO rewrite with join
-        Iterator<Map<SecondLevelId, Object>> selectAll = TinyDatabase.getInstance().selectAll(getTable().getTableName());
+        Iterator<Map<SecondLevelId, Object>> selectAll = instance.selectAll(getTable().getTableName());
 
         return new WhereCursor(selectAll, getFilter());
     }
@@ -57,6 +57,6 @@ public class SelectFromQuery implements IQuery<Iterator<Map<SecondLevelId, Objec
                 "table=" + table +
                 ", attributes=" + attributes +
                 ", filter=" + filter +
-                '}';
+                "} " + super.toString();
     }
 }

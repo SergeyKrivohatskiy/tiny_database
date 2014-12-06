@@ -2,7 +2,7 @@ package ru.spbau.tinydb.queries;
 
 import org.jetbrains.annotations.NotNull;
 import ru.spbau.tinydb.common.DBException;
-import ru.spbau.tinydb.tinyDatabase.TinyDatabase;
+import ru.spbau.tinydb.engine.IDataBase;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,8 +26,8 @@ public class CreateTableQuery extends TableNameContainer implements IQuery<Boole
 
     @Override
     @NotNull
-    public Boolean execute() throws DBException {
-        return TinyDatabase.getInstance().createTable(getTableName(), getAttributes());
+    public Boolean execute(@NotNull IDataBase instance) throws DBException {
+        return instance.createTable(getTableName(), getAttributes());
     }
 
     @NotNull

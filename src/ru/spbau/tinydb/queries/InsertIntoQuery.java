@@ -2,7 +2,7 @@ package ru.spbau.tinydb.queries;
 
 import org.jetbrains.annotations.NotNull;
 import ru.spbau.tinydb.common.DBException;
-import ru.spbau.tinydb.tinyDatabase.TinyDatabase;
+import ru.spbau.tinydb.engine.IDataBase;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,8 +35,8 @@ public class InsertIntoQuery extends TableNameContainer implements IQuery<Intege
 
     @NotNull
     @Override
-    public Integer execute() throws DBException {
-        TinyDatabase.getInstance().insertRecord(getTableName(), getAttributes(), getValues());
+    public Integer execute(@NotNull IDataBase instance) throws DBException {
+        instance.insertRecord(getTableName(), getAttributes(), getValues());
 
         // TODO return correct value of affected rows
         return 1;
