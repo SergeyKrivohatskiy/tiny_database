@@ -28,5 +28,6 @@ public interface IDataBase extends AutoCloseable {
 
     public void flush();
 
+    @NotNull
     public Iterator<Map<SecondLevelId, Object>> select(@NotNull SelectionTable table, @Nullable WhereCondition filter);
 }

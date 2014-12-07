@@ -114,7 +114,7 @@ public class DataBaseEngine implements AutoCloseable {
         }
 
         @NotNull
-        private Table findTable(String tableName) throws DBException {
+        private Table findTable(@NotNull String tableName) throws DBException {
             Table table = metaInf.loadTable(tableName);
 
             if (table == null) {
@@ -123,7 +123,7 @@ public class DataBaseEngine implements AutoCloseable {
             return table;
         }
 
-        private Object getDefault(Attribute.DataType dataType) {
+        private Object getDefault(@NotNull Attribute.DataType dataType) {
             if (dataType instanceof Attribute.IntegerType) {
                 return 0;
             }
@@ -154,9 +154,11 @@ public class DataBaseEngine implements AutoCloseable {
             }
         }
 
-        @NotNull
-        public Collection<Attribute> getTableSchema(String tableName) {
-            return metaInf.loadTable(tableName).getSchema();
+        @Nullable
+        public Collection<Attribute> getTableSchema(@NotNull String tableName) {
+            Table table = metaInf.loadTable(tableName);
+
+            return table != null ? table.getSchema() : null;
         }
 
         @Override
@@ -170,6 +172,7 @@ public class DataBaseEngine implements AutoCloseable {
         }
 
         @Override
+        @NotNull
         public Iterator<Map<SecondLevelId, Object>> select(@NotNull SelectionTable table, @Nullable WhereCondition filter) {
             Iterator<Record> recordCursor = new WhereCursor(findTable(table.getTableName()).iterator(), filter);
             Iterator<Map<SecondLevelId, Object>> resultCursor = new AtributesCursor(recordCursor);
