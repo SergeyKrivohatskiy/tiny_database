@@ -1,14 +1,7 @@
 package ru.spbau.tinydb.engine;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
 import org.jetbrains.annotations.NotNull;
-
+import org.jetbrains.annotations.Nullable;
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.cursors.AtributesCursor;
@@ -22,6 +15,13 @@ import ru.spbau.tinydb.queries.SelectionTable;
 import ru.spbau.tinydb.queries.WhereCondition;
 import ru.spbau.tinydb.table.Record;
 import ru.spbau.tinydb.table.Table;
+
+import java.io.UnsupportedEncodingException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class DataBase implements IDataBase {
 
@@ -137,19 +137,21 @@ public class DataBase implements IDataBase {
     }
 
     @Override
-    public Iterator<Map<SecondLevelId, Object>> select(
-            SelectionTable table, WhereCondition filter) {
+    public Iterator<Map<SecondLevelId, Object>> select(@NotNull SelectionTable table, @Nullable WhereCondition filter) {
         Iterator<Record> recordCursor = new WhereCursor(findTable(table.getTableName()).iterator(), filter);
         Iterator<Map<SecondLevelId, Object>> resultCursor = new AtributesCursor(recordCursor);
-        for(JoinOnExpression joinExpresion: table.getExpressions()) {
-            Table joinTable = findTable(joinExpresion.getTableName());
-            resultCursor = new NLJoinCursor(resultCursor, new Iterable<Map<SecondLevelId,Object>>() {
+
+        for (JoinOnExpression joinExpression : table.getExpressions()) {
+            final Table joinTable = findTable(joinExpression.getTableName());
+
+            resultCursor = new NLJoinCursor(resultCursor, new Iterable<Map<SecondLevelId, Object>>() {
                 @Override
                 public Iterator<Map<SecondLevelId, Object>> iterator() {
                     return new AtributesCursor(joinTable.iterator());
                 }
-            }, joinExpresion);
+            }, joinExpression);
         }
+
         return resultCursor;
     }
 }
