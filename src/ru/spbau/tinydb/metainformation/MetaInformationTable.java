@@ -25,6 +25,14 @@ import java.util.concurrent.ExecutionException;
  * Created by Sergey on 08.11.2014.
  */
 public class MetaInformationTable {
+	// Tables stored in the next format:
+	// Table1_name | begin_page | atr_count
+	// Atr1_name   | atr_type   | atr_param
+	// Atr2_name   | atr_type   | atr_param
+	// ...
+	// AtrLast_name| atr_type   | atr_param
+	// Table2_name | begin_page | atr_count 
+	// ...
 
     private final static Collection<Attribute> META_TABLE_SCHEME =
             Arrays.asList(new Attribute("name", new Attribute.VarcharType(255)),
@@ -46,6 +54,7 @@ public class MetaInformationTable {
 
     @Nullable
     public Table loadTable(@NotNull String name) {
+    	// makes full scan
         int ignore = 0;
         int attributesCount = 0;
         int firstPage = 0;
@@ -82,8 +91,10 @@ public class MetaInformationTable {
     private Attribute.DataType integersToType(Map<SecondLevelId, Object> row) {
         switch ((Integer)row.get(VAL1_ID)){
             case 1:
+            	// VAL2_ID not used (Store index info?)
                 return Attribute.IntegerType.getInstance();
             case 2:
+            	// VAL2_ID not used (Store index info?)
                 return Attribute.DoubleType.getInstance();
             case 3:
                 return new Attribute.VarcharType((Integer) row.get(VAL2_ID));
@@ -94,7 +105,7 @@ public class MetaInformationTable {
 
     @NotNull
     public Table createTable(@NotNull String name, @NotNull Collection<Attribute> schema) throws UnsupportedEncodingException, ExecutionException {
-        int firstPage = bufferManager.getFreePage();
+    	int firstPage = bufferManager.getFreePage();
         table.insertRecord(createRecord(name, firstPage, schema.size()));
 
         for (Attribute attribute : schema) {
