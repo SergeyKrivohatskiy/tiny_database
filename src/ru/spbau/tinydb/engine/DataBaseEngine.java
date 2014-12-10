@@ -77,7 +77,7 @@ public class DataBaseEngine implements AutoCloseable {
             while (recordIterator.hasNext()) {
                 Record record = recordIterator.next();
                 if (filter.check(record.getAtributes())) {
-                    assert(table.remove(record.getRecordId()));
+                    table.remove(record.getRecordId());
                     removed += 1;
                 }
             }
