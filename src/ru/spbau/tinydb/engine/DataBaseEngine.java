@@ -77,7 +77,7 @@ public class DataBaseEngine implements AutoCloseable {
             while (recordIterator.hasNext()) {
                 Record record = recordIterator.next();
                 if (filter.check(record.getAtributes())) {
-                    table.remove(record.getRecordId());
+                    assert(table.remove(record.getRecordId()));
                     removed += 1;
                 }
             }
@@ -97,6 +97,8 @@ public class DataBaseEngine implements AutoCloseable {
             for (Attribute attr : schema) {
                 int idx = attrs.indexOf(attr.getAttributeName());
                 if (idx == -1) {
+                	// TODO Maybe move this out?
+                	// DB shouldn't think about default atr values IMO
                     row[i] = getDefault(attr.getDataType());
                 } else {
                     row[i] = record.get(idx);
@@ -105,6 +107,7 @@ public class DataBaseEngine implements AutoCloseable {
             }
 
             // TODO return correct value of affected rows
+            // skrivohatskiy- 1 is a correct value isn't it?
             try {
                 table.insertRecord(row);
                 return 1;
@@ -115,6 +118,8 @@ public class DataBaseEngine implements AutoCloseable {
 
         @NotNull
         private Table findTable(@NotNull String tableName) throws DBException {
+        	// This is O(Table sizes sum) operation
+        	// TODO create table cache here or inside of metaInf
             Table table = metaInf.loadTable(tableName);
 
             if (table == null) {

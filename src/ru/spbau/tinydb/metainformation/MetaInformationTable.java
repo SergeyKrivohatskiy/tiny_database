@@ -54,6 +54,7 @@ public class MetaInformationTable {
 
     @Nullable
     public Table loadTable(@NotNull String name) {
+    	// TODO refactor this method. Maybe too complicated loop here
     	// makes full scan
         int ignore = 0;
         int attributesCount = 0;
