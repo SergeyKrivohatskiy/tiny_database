@@ -148,7 +148,7 @@ public class TableBase implements Iterable<ViewWithId> {
             }
             
             // TODO if page was full- move to notFullPages
-            
+            pageView.setChanged();
             rowsCount -= 1;
             writeHeader();
             return true;
