@@ -16,6 +16,9 @@ import java.util.Map;
  * Created by Sergey on 27.10.2014.
  */
 public class BufferManager {
+	// TODO add some header(magic constants, version, other very useful info)
+	// TODO add check sum(methods write/load page)
+	
     public final static long PAGE_SIZE = 1 << 12; // 4KB
     private final static int BUFFER_SIZE = 1 << 10; // in PAGE_SIZE's
     public final static int METAINF_FIRST_PAGE = 1;
@@ -91,7 +94,7 @@ public class BufferManager {
 	        	currentPos = bufferIsUsed.nextClearBit(0);
 	        }
 	        if(currentPos == BUFFER_SIZE) {
-	            throw new RuntimeException("All buffer positions in use! Panic!");
+	            throw new RuntimeException("All buffer positions are in use! Panic!");
 	        }
 	        if(bufferWasUsed.get(currentPos)) {
 	        	bufferWasUsed.clear(currentPos);

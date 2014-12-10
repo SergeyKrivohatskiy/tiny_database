@@ -28,6 +28,9 @@ public class MetaInfTest {
         Object[] record = new Object[1];
         record[0] = "testValue";
         testTable.insertRecord(record);
+        testTable.insertRecord(record);
+        testTable.insertRecord(record);
+        testTable.insertRecord(record);
 
         testTable = meta.loadTable("testTable");
 
