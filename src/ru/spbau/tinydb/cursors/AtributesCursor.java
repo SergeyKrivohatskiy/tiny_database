@@ -25,4 +25,9 @@ public class AtributesCursor implements
         return baseIterator.next().getAtributes();
     }
 
+	@Override
+	public void remove() {
+		baseIterator.remove();
+	}
+
 }
