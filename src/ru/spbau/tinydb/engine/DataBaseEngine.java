@@ -106,14 +106,13 @@ public class DataBaseEngine implements AutoCloseable {
                 i += 1;
             }
 
-            // TODO return correct value of affected rows
-            // skrivohatskiy- 1 is a correct value isn't it?
             try {
                 table.insertRecord(row);
-                return 1;
             } catch (UnsupportedEncodingException | ExecutionException | ClassCastException e) {
                 throw new DBException(e);
             }
+
+            return 1;
         }
 
         @NotNull
