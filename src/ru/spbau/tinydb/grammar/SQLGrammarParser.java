@@ -2,20 +2,22 @@
 
     package ru.spbau.tinydb.grammar;
 
-    import java.util.*;
-    import ru.spbau.tinydb.queries.*;
-    import ru.spbau.tinydb.expressions.*;
-    import ru.spbau.tinydb.expressions.bool.*;
-    import ru.spbau.tinydb.expressions.comparison.*;
-
-import org.antlr.v4.runtime.atn.*;
-import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.misc.*;
-import org.antlr.v4.runtime.tree.*;
-import java.util.List;
-import java.util.Iterator;
+import org.antlr.v4.runtime.atn.ATN;
+import org.antlr.v4.runtime.atn.ATNDeserializer;
+import org.antlr.v4.runtime.atn.ParserATNSimulator;
+import org.antlr.v4.runtime.atn.PredictionContextCache;
+import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
+import org.antlr.v4.runtime.tree.TerminalNode;
+import ru.spbau.tinydb.expressions.AssignmentExpression;
+import ru.spbau.tinydb.expressions.bool.*;
+import ru.spbau.tinydb.expressions.comparison.*;
+import ru.spbau.tinydb.queries.*;
+
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class SQLGrammarParser extends Parser {
@@ -30,17 +32,17 @@ public class SQLGrammarParser extends Parser {
 		DELETE=17, INSERT=18, INTO=19, VALUES=20, UPDATE=21, SET=22, TABLE=23, 
 		SELECT=24, FROM=25, WHERE=26, INNER=27, JOIN=28, ON=29, COMMA=30, ASTERISC=31, 
 		LEFT_PARENTHESIS=32, RIGHT_PARENTHESIS=33, SEMICOLON=34, WHITE_SPACE=35, 
-		LOWER_CASE=36, UPPER_CASE=37, UNDERLINE=38, DECIMAL_DIGIT=39, SIGN=40, 
-		DECIMAL_POINT=41, ARROW=42, EQUAL=43, NOT_EQUAL=44, LESS=45, LESS_OR_EQUAL=46, 
-		GREATER=47, GREATER_OR_EQUAL=48, QUOTES=49;
+		LOWER_CASE=36, UPPER_CASE=37, UNDERLINE=38, DECIMAL_DIGIT=39, SIGN=40,
+			DECIMAL_POINT = 41, EQUAL = 42, NOT_EQUAL = 43, LESS = 44, LESS_OR_EQUAL = 45, GREATER = 46,
+			GREATER_OR_EQUAL = 47, QUOTES = 48;
 	public static final String[] tokenNames = {
 		"<INVALID>", "'OR'", "'AND'", "'NOT'", "'TRUE'", "'FALSE'", "'INTEGER'", 
 		"'DOUBLE'", "'VARCHAR'", "'CREATE'", "'UNIQUE'", "'INDEX'", "'USING'", 
 		"'BTREE'", "'HASH'", "'ASC'", "'DESC'", "'DELETE'", "'INSERT'", "'INTO'", 
 		"'VALUES'", "'UPDATE'", "'SET'", "'TABLE'", "'SELECT'", "'FROM'", "'WHERE'", 
-		"'INNER'", "'JOIN'", "'ON'", "','", "'*'", "'('", "')'", "';'", "WHITE_SPACE", 
-		"LOWER_CASE", "UPPER_CASE", "'_'", "DECIMAL_DIGIT", "SIGN", "'.'", "'->'", 
-		"'='", "'!='", "'<'", "'<='", "'>'", "'>='", "'''"
+		"'INNER'", "'JOIN'", "'ON'", "','", "'*'", "'('", "')'", "';'", "WHITE_SPACE",
+			"LOWER_CASE", "UPPER_CASE", "'_'", "DECIMAL_DIGIT", "SIGN", "'.'", "'='",
+			"'!='", "'<'", "'<='", "'>'", "'>='", "'''"
 	};
 	public static final int
 		RULE_script = 0, RULE_query = 1, RULE_createTable = 2, RULE_attribute = 3, 
@@ -821,7 +823,7 @@ public class SQLGrammarParser extends Parser {
 			setState(194);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << OR) | (1L << AND) | (1L << NOT) | (1L << TRUE) | (1L << FALSE) | (1L << INTEGER_TYPE) | (1L << DOUBLE_TYPE) | (1L << VAR_CHAR_TYPE) | (1L << CREATE) | (1L << UNIQUE) | (1L << INDEX) | (1L << USING) | (1L << BTREE) | (1L << HASH) | (1L << ASC) | (1L << DESC) | (1L << DELETE) | (1L << INSERT) | (1L << INTO) | (1L << VALUES) | (1L << UPDATE) | (1L << SET) | (1L << TABLE) | (1L << SELECT) | (1L << FROM) | (1L << WHERE) | (1L << INNER) | (1L << JOIN) | (1L << ON) | (1L << COMMA) | (1L << ASTERISC) | (1L << LEFT_PARENTHESIS) | (1L << RIGHT_PARENTHESIS) | (1L << SEMICOLON) | (1L << WHITE_SPACE) | (1L << LOWER_CASE) | (1L << UPPER_CASE) | (1L << UNDERLINE) | (1L << DECIMAL_DIGIT) | (1L << SIGN) | (1L << DECIMAL_POINT) | (1L << ARROW) | (1L << EQUAL) | (1L << NOT_EQUAL) | (1L << LESS) | (1L << LESS_OR_EQUAL) | (1L << GREATER) | (1L << GREATER_OR_EQUAL))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << OR) | (1L << AND) | (1L << NOT) | (1L << TRUE) | (1L << FALSE) | (1L << INTEGER_TYPE) | (1L << DOUBLE_TYPE) | (1L << VAR_CHAR_TYPE) | (1L << CREATE) | (1L << UNIQUE) | (1L << INDEX) | (1L << USING) | (1L << BTREE) | (1L << HASH) | (1L << ASC) | (1L << DESC) | (1L << DELETE) | (1L << INSERT) | (1L << INTO) | (1L << VALUES) | (1L << UPDATE) | (1L << SET) | (1L << TABLE) | (1L << SELECT) | (1L << FROM) | (1L << WHERE) | (1L << INNER) | (1L << JOIN) | (1L << ON) | (1L << COMMA) | (1L << ASTERISC) | (1L << LEFT_PARENTHESIS) | (1L << RIGHT_PARENTHESIS) | (1L << SEMICOLON) | (1L << WHITE_SPACE) | (1L << LOWER_CASE) | (1L << UPPER_CASE) | (1L << UNDERLINE) | (1L << DECIMAL_DIGIT) | (1L << SIGN) | (1L << DECIMAL_POINT) | (1L << EQUAL) | (1L << NOT_EQUAL) | (1L << LESS) | (1L << LESS_OR_EQUAL) | (1L << GREATER) | (1L << GREATER_OR_EQUAL))) != 0)) {
 				{
 				{
 				setState(191);
@@ -1845,7 +1847,10 @@ public class SQLGrammarParser extends Parser {
 		public List<FirstLevelIdContext> firstLevelId() {
 			return getRuleContexts(FirstLevelIdContext.class);
 		}
-		public TerminalNode ARROW() { return getToken(SQLGrammarParser.ARROW, 0); }
+
+		public TerminalNode DECIMAL_POINT() {
+			return getToken(SQLGrammarParser.DECIMAL_POINT, 0);
+		}
 		public SecondLevelIdContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -1870,14 +1875,17 @@ public class SQLGrammarParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(365); ((SecondLevelIdContext)_localctx).firstLevelId = firstLevelId();
-			setState(366); match(ARROW);
+				{
+					setState(366);
+					match(DECIMAL_POINT);
 
-			        tableName = ((SecondLevelIdContext)_localctx).firstLevelId.result;
-			    
-			setState(368); ((SecondLevelIdContext)_localctx).firstLevelId = firstLevelId();
+					tableName = ((SecondLevelIdContext) _localctx).firstLevelId.result;
 
-			        ((SecondLevelIdContext)_localctx).result =  new SecondLevelId(tableName, ((SecondLevelIdContext)_localctx).firstLevelId.result);
-			    
+					setState(368); ((SecondLevelIdContext)_localctx).firstLevelId = firstLevelId();
+
+					((SecondLevelIdContext) _localctx).result = new SecondLevelId(tableName, ((SecondLevelIdContext) _localctx).firstLevelId.result);
+
+				}
 			}
 		}
 		catch (RecognitionException re) {
@@ -2880,7 +2888,7 @@ public class SQLGrammarParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\63\u020c\4\2\t\2"+
+			"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\62\u020c\4\2\t\2" +
 		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
@@ -2919,7 +2927,7 @@ public class SQLGrammarParser extends Parser {
 		"!\3!\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\5\"\u01ec\n\"\3\"\3\"\3#"+
 		"\3#\3#\3#\3#\3#\3#\3#\3#\3#\5#\u01fa\n#\3#\3#\3$\3$\3$\3$\3$\3$\3$\3$"+
 		"\3$\3$\5$\u0208\n$\3$\3$\3$\2\2%\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36"+
-		" \"$&(*,.\60\62\64\668:<>@BDF\2\5\3\2\63\63\3\2&\'\3\2&)\u021d\2K\3\2"+
+					" \"$&(*,.\60\62\64\668:<>@BDF\2\5\3\2\62\62\3\2&\'\3\2&)\u021d\2K\3\2" +
 		"\2\2\4d\3\2\2\2\6h\3\2\2\2\bz\3\2\2\2\n\u0085\3\2\2\2\f\u0087\3\2\2\2"+
 		"\16\u0096\3\2\2\2\20\u0099\3\2\2\2\22\u00bc\3\2\2\2\24\u00c0\3\2\2\2\26"+
 		"\u00d0\3\2\2\2\30\u00d5\3\2\2\2\32\u00d9\3\2\2\2\34\u00fe\3\2\2\2\36\u0109"+
@@ -2958,9 +2966,9 @@ public class SQLGrammarParser extends Parser {
 		"\2\2\u00b6\u00b8\3\2\2\2\u00b7\u00b9\7)\2\2\u00b8\u00b7\3\2\2\2\u00b9"+
 		"\u00ba\3\2\2\2\u00ba\u00b8\3\2\2\2\u00ba\u00bb\3\2\2\2\u00bb\u00bd\3\2"+
 		"\2\2\u00bc\u00a3\3\2\2\2\u00bc\u00b2\3\2\2\2\u00bd\u00be\3\2\2\2\u00be"+
-		"\u00bf\b\n\1\2\u00bf\23\3\2\2\2\u00c0\u00c4\7\63\2\2\u00c1\u00c3\n\2\2"+
+					"\u00bf\b\n\1\2\u00bf\23\3\2\2\2\u00c0\u00c4\7\62\2\2\u00c1\u00c3\n\2\2" +
 		"\2\u00c2\u00c1\3\2\2\2\u00c3\u00c6\3\2\2\2\u00c4\u00c2\3\2\2\2\u00c4\u00c5"+
-		"\3\2\2\2\u00c5\u00c7\3\2\2\2\u00c6\u00c4\3\2\2\2\u00c7\u00c8\7\63\2\2"+
+					"\3\2\2\2\u00c5\u00c7\3\2\2\2\u00c6\u00c4\3\2\2\2\u00c7\u00c8\7\62\2\2" +
 		"\u00c8\u00c9\b\13\1\2\u00c9\25\3\2\2\2\u00ca\u00cb\7(\2\2\u00cb\u00d1"+
 		"\5\30\r\2\u00cc\u00ce\t\3\2\2\u00cd\u00cf\5\30\r\2\u00ce\u00cd\3\2\2\2"+
 		"\u00ce\u00cf\3\2\2\2\u00cf\u00d1\3\2\2\2\u00d0\u00ca\3\2\2\2\u00d0\u00cc"+
@@ -2997,7 +3005,7 @@ public class SQLGrammarParser extends Parser {
 		"\"\22\2\u0131\u0132\b\21\1\2\u0132\u0134\3\2\2\2\u0133\u012f\3\2\2\2\u0134"+
 		"\u0137\3\2\2\2\u0135\u0133\3\2\2\2\u0135\u0136\3\2\2\2\u0136\u0138\3\2"+
 		"\2\2\u0137\u0135\3\2\2\2\u0138\u0139\5(\25\2\u0139\u013a\b\21\1\2\u013a"+
-		"!\3\2\2\2\u013b\u013c\5\26\f\2\u013c\u013d\7-\2\2\u013d\u013e\5\16\b\2"+
+					"!\3\2\2\2\u013b\u013c\5\26\f\2\u013c\u013d\7,\2\2\u013d\u013e\5\16\b\2" +
 		"\u013e\u013f\b\22\1\2\u013f#\3\2\2\2\u0140\u0141\7\23\2\2\u0141\u0142"+
 		"\7\33\2\2\u0142\u0143\5\26\f\2\u0143\u0144\5(\25\2\u0144\u0145\b\23\1"+
 		"\2\u0145%\3\2\2\2\u0146\u0147\7!\2\2\u0147\u0154\b\24\1\2\u0148\u0149"+
@@ -3011,9 +3019,9 @@ public class SQLGrammarParser extends Parser {
 		"\u0162\3\2\2\2\u0160\u015e\3\2\2\2\u0160\u0161\3\2\2\2\u0161\u0163\3\2"+
 		"\2\2\u0162\u0160\3\2\2\2\u0163\u0164\b\26\1\2\u0164+\3\2\2\2\u0165\u0166"+
 		"\7\35\2\2\u0166\u0167\7\36\2\2\u0167\u0168\5\26\f\2\u0168\u0169\7\37\2"+
-		"\2\u0169\u016a\5.\30\2\u016a\u016b\7-\2\2\u016b\u016c\b\27\1\2\u016c\u016d"+
+					"\2\u0169\u016a\5.\30\2\u016a\u016b\7,\2\2\u016b\u016c\b\27\1\2\u016c\u016d" +
 		"\5.\30\2\u016d\u016e\b\27\1\2\u016e-\3\2\2\2\u016f\u0170\5\26\f\2\u0170"+
-		"\u0171\7,\2\2\u0171\u0172\b\30\1\2\u0172\u0173\5\26\f\2\u0173\u0174\b"+
+					"\u0171\7+\2\2\u0171\u0172\b\30\1\2\u0172\u0173\5\26\f\2\u0173\u0174\b" +
 		"\30\1\2\u0174/\3\2\2\2\u0175\u0176\5\62\32\2\u0176\u017b\b\31\1\2\u0177"+
 		"\u0178\7\3\2\2\u0178\u0179\5\62\32\2\u0179\u017a\b\31\1\2\u017a\u017c"+
 		"\3\2\2\2\u017b\u0177\3\2\2\2\u017b\u017c\3\2\2\2\u017c\u017d\3\2\2\2\u017d"+
@@ -3036,35 +3044,34 @@ public class SQLGrammarParser extends Parser {
 		"\u01b6\3\2\2\2\u01b2\u01b3\5F$\2\u01b3\u01b4\b\36\1\2\u01b4\u01b6\3\2"+
 		"\2\2\u01b5\u01a3\3\2\2\2\u01b5\u01a6\3\2\2\2\u01b5\u01a9\3\2\2\2\u01b5"+
 		"\u01ac\3\2\2\2\u01b5\u01af\3\2\2\2\u01b5\u01b2\3\2\2\2\u01b6;\3\2\2\2"+
-		"\u01b7\u01b8\5.\30\2\u01b8\u01b9\7-\2\2\u01b9\u01ba\5\16\b\2\u01ba\u01bb"+
-		"\b\37\1\2\u01bb\u01c2\3\2\2\2\u01bc\u01bd\5\16\b\2\u01bd\u01be\7-\2\2"+
+					"\u01b7\u01b8\5.\30\2\u01b8\u01b9\7,\2\2\u01b9\u01ba\5\16\b\2\u01ba\u01bb" +
+					"\b\37\1\2\u01bb\u01c2\3\2\2\2\u01bc\u01bd\5\16\b\2\u01bd\u01be\7,\2\2" +
 		"\u01be\u01bf\5.\30\2\u01bf\u01c0\b\37\1\2\u01c0\u01c2\3\2\2\2\u01c1\u01b7"+
 		"\3\2\2\2\u01c1\u01bc\3\2\2\2\u01c2\u01c3\3\2\2\2\u01c3\u01c4\b\37\1\2"+
-		"\u01c4=\3\2\2\2\u01c5\u01c6\5.\30\2\u01c6\u01c7\7.\2\2\u01c7\u01c8\5\16"+
+					"\u01c4=\3\2\2\2\u01c5\u01c6\5.\30\2\u01c6\u01c7\7-\2\2\u01c7\u01c8\5\16" +
 		"\b\2\u01c8\u01c9\b \1\2\u01c9\u01d0\3\2\2\2\u01ca\u01cb\5\16\b\2\u01cb"+
-		"\u01cc\7.\2\2\u01cc\u01cd\5.\30\2\u01cd\u01ce\b \1\2\u01ce\u01d0\3\2\2"+
+					"\u01cc\7-\2\2\u01cc\u01cd\5.\30\2\u01cd\u01ce\b \1\2\u01ce\u01d0\3\2\2" +
 		"\2\u01cf\u01c5\3\2\2\2\u01cf\u01ca\3\2\2\2\u01d0\u01d1\3\2\2\2\u01d1\u01d2"+
-		"\b \1\2\u01d2?\3\2\2\2\u01d3\u01d4\5.\30\2\u01d4\u01d5\7/\2\2\u01d5\u01d6"+
+					"\b \1\2\u01d2?\3\2\2\2\u01d3\u01d4\5.\30\2\u01d4\u01d5\7.\2\2\u01d5\u01d6" +
 		"\5\16\b\2\u01d6\u01d7\b!\1\2\u01d7\u01de\3\2\2\2\u01d8\u01d9\5\16\b\2"+
-		"\u01d9\u01da\7\61\2\2\u01da\u01db\5.\30\2\u01db\u01dc\b!\1\2\u01dc\u01de"+
+					"\u01d9\u01da\7\60\2\2\u01da\u01db\5.\30\2\u01db\u01dc\b!\1\2\u01dc\u01de" +
 		"\3\2\2\2\u01dd\u01d3\3\2\2\2\u01dd\u01d8\3\2\2\2\u01de\u01df\3\2\2\2\u01df"+
-		"\u01e0\b!\1\2\u01e0A\3\2\2\2\u01e1\u01e2\5.\30\2\u01e2\u01e3\7\60\2\2"+
-		"\u01e3\u01e4\5\16\b\2\u01e4\u01e5\b\"\1\2\u01e5\u01ec\3\2\2\2\u01e6\u01e7"+
-		"\5\16\b\2\u01e7\u01e8\7\62\2\2\u01e8\u01e9\5.\30\2\u01e9\u01ea\b\"\1\2"+
-		"\u01ea\u01ec\3\2\2\2\u01eb\u01e1\3\2\2\2\u01eb\u01e6\3\2\2\2\u01ec\u01ed"+
-		"\3\2\2\2\u01ed\u01ee\b\"\1\2\u01eeC\3\2\2\2\u01ef\u01f0\5.\30\2\u01f0"+
-		"\u01f1\7\61\2\2\u01f1\u01f2\5\16\b\2\u01f2\u01f3\b#\1\2\u01f3\u01fa\3"+
-		"\2\2\2\u01f4\u01f5\5\16\b\2\u01f5\u01f6\7/\2\2\u01f6\u01f7\5.\30\2\u01f7"+
-		"\u01f8\b#\1\2\u01f8\u01fa\3\2\2\2\u01f9\u01ef\3\2\2\2\u01f9\u01f4\3\2"+
-		"\2\2\u01fa\u01fb\3\2\2\2\u01fb\u01fc\b#\1\2\u01fcE\3\2\2\2\u01fd\u01fe"+
-		"\5.\30\2\u01fe\u01ff\7\62\2\2\u01ff\u0200\5\16\b\2\u0200\u0201\b$\1\2"+
-		"\u0201\u0208\3\2\2\2\u0202\u0203\5\16\b\2\u0203\u0204\7\60\2\2\u0204\u0205"+
-		"\5.\30\2\u0205\u0206\b$\1\2\u0206\u0208\3\2\2\2\u0207\u01fd\3\2\2\2\u0207"+
-		"\u0202\3\2\2\2\u0208\u0209\3\2\2\2\u0209\u020a\b$\1\2\u020aG\3\2\2\2+"+
-		"Mdt\u0085\u0096\u0099\u009e\u00a3\u00a8\u00ae\u00b2\u00b5\u00ba\u00bc"+
-		"\u00c4\u00ce\u00d0\u00d7\u00dc\u00ea\u00f2\u00fa\u0105\u0116\u0124\u0135"+
-		"\u0150\u0153\u0160\u017b\u0185\u018b\u019b\u01a1\u01b5\u01c1\u01cf\u01dd"+
-		"\u01eb\u01f9\u0207";
+					"\u01e0\b!\1\2\u01e0A\3\2\2\2\u01e1\u01e2\5.\30\2\u01e2\u01e3\7/\2\2\u01e3" +
+					"\u01e4\5\16\b\2\u01e4\u01e5\b\"\1\2\u01e5\u01ec\3\2\2\2\u01e6\u01e7\5" +
+					"\16\b\2\u01e7\u01e8\7\61\2\2\u01e8\u01e9\5.\30\2\u01e9\u01ea\b\"\1\2\u01ea" +
+					"\u01ec\3\2\2\2\u01eb\u01e1\3\2\2\2\u01eb\u01e6\3\2\2\2\u01ec\u01ed\3\2" +
+					"\2\2\u01ed\u01ee\b\"\1\2\u01eeC\3\2\2\2\u01ef\u01f0\5.\30\2\u01f0\u01f1" +
+					"\7\60\2\2\u01f1\u01f2\5\16\b\2\u01f2\u01f3\b#\1\2\u01f3\u01fa\3\2\2\2" +
+					"\u01f4\u01f5\5\16\b\2\u01f5\u01f6\7.\2\2\u01f6\u01f7\5.\30\2\u01f7\u01f8" +
+					"\b#\1\2\u01f8\u01fa\3\2\2\2\u01f9\u01ef\3\2\2\2\u01f9\u01f4\3\2\2\2\u01fa" +
+					"\u01fb\3\2\2\2\u01fb\u01fc\b#\1\2\u01fcE\3\2\2\2\u01fd\u01fe\5.\30\2\u01fe" +
+					"\u01ff\7\61\2\2\u01ff\u0200\5\16\b\2\u0200\u0201\b$\1\2\u0201\u0208\3" +
+					"\2\2\2\u0202\u0203\5\16\b\2\u0203\u0204\7/\2\2\u0204\u0205\5.\30\2\u0205" +
+					"\u0206\b$\1\2\u0206\u0208\3\2\2\2\u0207\u01fd\3\2\2\2\u0207\u0202\3\2" +
+					"\2\2\u0208\u0209\3\2\2\2\u0209\u020a\b$\1\2\u020aG\3\2\2\2+Mdt\u0085\u0096" +
+					"\u0099\u009e\u00a3\u00a8\u00ae\u00b2\u00b5\u00ba\u00bc\u00c4\u00ce\u00d0" +
+					"\u00d7\u00dc\u00ea\u00f2\u00fa\u0105\u0116\u0124\u0135\u0150\u0153\u0160" +
+					"\u017b\u0185\u018b\u019b\u01a1\u01b5\u01c1\u01cf\u01dd\u01eb\u01f9\u0207";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

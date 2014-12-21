@@ -27,8 +27,8 @@ INSERT INTO student_groups(student_id, group_id) VALUES (5, 1);
 
 SELECT * FROM students;
 
-SELECT first_name, last_name, group_name FROM students INNER JOIN student_groups ON students->student_id = student_groups->student_id INNER JOIN groups ON student_groups->group_id = groups->group_id;
+SELECT first_name, last_name, group_name FROM students INNER JOIN student_groups ON students.student_id = student_groups.student_id INNER JOIN groups ON student_groups.group_id = groups.group_id;
 
-DELETE FROM students WHERE students->avg_point < 1.0;
+DELETE FROM students WHERE students.avg_point < 1.0;
 
-SELECT first_name, last_name FROM students WHERE students->student_id >= 0 AND students->student_id < 100;
+SELECT first_name, last_name FROM students WHERE students.student_id >= 0 AND students.student_id < 100;

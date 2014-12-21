@@ -1,1 +1,1 @@
-DELETE FROM students WHERE students->last_name = 'Kupriy';
+DELETE FROM students WHERE students.last_name = 'Kupriy';

@@ -304,12 +304,13 @@ secondLevelId returns [SecondLevelId result]
 @init {
     String tableName = null;
 }
-    :   firstLevelId ARROW {
-        tableName = $firstLevelId.result;
-    }
-    firstLevelId {
-        $result = new SecondLevelId(tableName, $firstLevelId.result);
-    }
+    :   firstLevelId ( DECIMAL_POINT {
+            tableName = $firstLevelId.result;
+        }
+        firstLevelId {
+            $result = new SecondLevelId(tableName, $firstLevelId.result);
+        }
+    )
     ;
 
 booleanExpression returns [BooleanExpression result]
@@ -708,10 +709,6 @@ SIGN
 
 DECIMAL_POINT
     :   '.'
-    ;
-
-ARROW
-    :   '->'
     ;
 
 EQUAL
