@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -36,7 +37,7 @@ public class TableTest {
         Collection<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("Test int attr", Attribute.IntegerType.getInstance()));
         attributes.add(new Attribute("Test varchar attr", new Attribute.VarcharType(32)));
-        Table table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, attributes, "name");
+        Table table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, attributes, "name", new HashMap<>());
         Object[] record = new Object[2];
         record[0] = 123454;
         record[1] = "value";

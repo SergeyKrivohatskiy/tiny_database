@@ -3,6 +3,7 @@ package ru.spbau.tinydb.metainformation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import ru.spbau.tinydb.btree.BxTree;
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.queries.Attribute;
@@ -17,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -49,13 +51,15 @@ public class MetaInformationTable {
 
     public MetaInformationTable(@NotNull BufferManager bufferManager) {
         this.bufferManager = bufferManager;
-        table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, META_TABLE_SCHEME, "metainf");
+        table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, META_TABLE_SCHEME, "metainf", new HashMap<>());
     }
 
-    @Nullable
+    @SuppressWarnings("rawtypes")
+	@Nullable
     public Table loadTable(@NotNull String name) {
     	// TODO refactor this method. Maybe too complicated loop here
     	// makes full scan
+		Map<Attribute, BxTree> indexes = new HashMap<>();
         int ignore = 0;
         int attributesCount = 0;
         int firstPage = 0;
@@ -70,9 +74,15 @@ public class MetaInformationTable {
             if(attributes != null) {
                 attributesCount -= 1;
                 Attribute.DataType type = integersToType(recAtributes);
-                attributes.add(new Attribute(currName, type));
+                BxTree index = integersToIndex(recAtributes);
+                Attribute atr = new Attribute(currName, type);
+                attributes.add(atr);
+                if(index != null) {
+                	indexes.put(atr, index);
+                }
                 if(attributesCount == 0) {
-                    return new Table(bufferManager, firstPage, attributes, name);
+                    return new Table(bufferManager, firstPage, 
+                    		attributes, name, indexes);
                 }
                 continue;
             }
@@ -103,6 +113,17 @@ public class MetaInformationTable {
 
         throw new DBException("Unknown type");
     }
+    
+    private BxTree<BxTree.IntegerKey> integersToIndex(Map<SecondLevelId, Object> row) {
+        if((Integer)row.get(VAL1_ID) == 1 && (Integer)row.get(VAL2_ID) != 0) {
+        	//int firstPage = (Integer)row.get(VAL2_ID);
+        	// TODO use firstPage to load index
+        	return new BxTree<BxTree.IntegerKey>(bufferManager, 100);
+        }
+        // TODO add "Double" index
+
+        return null;
+    }
 
     @NotNull
     public Table createTable(@NotNull String name, @NotNull Collection<Attribute> schema) throws UnsupportedEncodingException, ExecutionException {
@@ -112,7 +133,7 @@ public class MetaInformationTable {
         for (Attribute attribute : schema) {
             table.insertRecord(createRecord(attribute));
         }
-        return new Table(bufferManager, firstPage, schema, name);
+        return new Table(bufferManager, firstPage, schema, name, new HashMap<>());
     }
 
     @NotNull

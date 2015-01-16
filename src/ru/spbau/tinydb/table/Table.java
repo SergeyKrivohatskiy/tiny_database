@@ -2,6 +2,7 @@ package ru.spbau.tinydb.table;
 
 import org.jetbrains.annotations.NotNull;
 
+import ru.spbau.tinydb.btree.BxTree;
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.bufferManager.BufferView;
 import ru.spbau.tinydb.common.DBException;
@@ -33,13 +34,16 @@ public class Table implements Iterable<Record> {
     @NotNull
     private final Collection<Attribute> attributes;
 	private final String tableName;
+	private final Map<Attribute, BxTree> indexes;
 
-    public Table(@NotNull BufferManager bm, int firstPage, @NotNull Collection<Attribute> attributes, String name) {
+    public Table(@NotNull BufferManager bm, int firstPage, @NotNull Collection<Attribute> attributes,
+    		String name, @NotNull Map<Attribute, BxTree> indexes) {
         int recordSize = 0;
         for (Attribute attribute : attributes) {
             recordSize += getAttrSize(attribute);
         }
 
+        this.indexes = indexes;
         this.recordSize = recordSize;
         this.attributes = attributes;
         tableName = name;
