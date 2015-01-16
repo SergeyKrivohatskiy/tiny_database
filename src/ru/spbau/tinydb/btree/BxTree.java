@@ -90,7 +90,7 @@ public class BxTree<Key extends BxTree.KeyType> {
     static public class IntegerKey extends KeyType {
         private int key;
 
-        IntegerKey(int key) {
+        public IntegerKey(int key) {
             this.key = key;
         }
 
@@ -116,9 +116,9 @@ public class BxTree<Key extends BxTree.KeyType> {
     }
 
     static public class DoubleKey extends KeyType {
-        private int key;
+        private double key;
 
-        DoubleKey(int key) {
+        public DoubleKey(double key) {
             this.key = key;
         }
 
@@ -135,8 +135,7 @@ public class BxTree<Key extends BxTree.KeyType> {
         @Override
         public int compareTo(@NotNull Object o) {
             if (o instanceof DoubleKey) {
-                DoubleKey other = (DoubleKey) o;
-                return key - other.key;
+                return Double.compare(key, ((DoubleKey) o).key);
             } else {
                 throw new DBException("Incorrect type of key in index");
             }

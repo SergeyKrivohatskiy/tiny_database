@@ -102,10 +102,8 @@ public class MetaInformationTable {
     private Attribute.DataType integersToType(Map<SecondLevelId, Object> row) {
         switch ((Integer)row.get(VAL1_ID)){
             case 1:
-            	// VAL2_ID not used (Store index info?)
                 return Attribute.IntegerType.getInstance();
             case 2:
-            	// VAL2_ID not used (Store index info?)
                 return Attribute.DoubleType.getInstance();
             case 3:
                 return new Attribute.VarcharType((Integer) row.get(VAL2_ID));

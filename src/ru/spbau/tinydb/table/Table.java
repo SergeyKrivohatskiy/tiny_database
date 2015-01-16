@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -34,9 +35,12 @@ public class Table implements Iterable<Record> {
     @NotNull
     private final Collection<Attribute> attributes;
 	private final String tableName;
+	@SuppressWarnings("rawtypes")
 	private final Map<Attribute, BxTree> indexes;
+	private HashMap<Attribute, Integer> atrToIdx;
 
-    public Table(@NotNull BufferManager bm, int firstPage, @NotNull Collection<Attribute> attributes,
+    @SuppressWarnings("rawtypes")
+	public Table(@NotNull BufferManager bm, int firstPage, @NotNull Collection<Attribute> attributes,
     		String name, @NotNull Map<Attribute, BxTree> indexes) {
         int recordSize = 0;
         for (Attribute attribute : attributes) {
@@ -46,6 +50,12 @@ public class Table implements Iterable<Record> {
         this.indexes = indexes;
         this.recordSize = recordSize;
         this.attributes = attributes;
+        this.atrToIdx = new HashMap<>();
+        int i = 0;
+        for(Attribute atr: attributes) {
+        	atrToIdx.put(atr, i);
+        	i += 1;
+        }
         tableName = name;
         baseTable = new TableBase(bm, firstPage, recordSize);
     }
@@ -64,14 +74,35 @@ public class Table implements Iterable<Record> {
 
         throw new DBException("Unsupported attribute type");
     }
+    
+    @SuppressWarnings("rawtypes")
+	public BxTree getIndex(Attribute atr) {
+    	return indexes.get(atr);
+    }
+    
+    public void createIndex(Attribute atr) {
+    	BxTree index = null;
+    	// TODO index creation(metainf table)
+    	
+    	for(Record rec: this) {
+    		Object key = rec.getAtributes().get(new SecondLevelId(tableName, atr.getAttributeName()));
+    		
+    		if(atr.getDataType().equals(Attribute.IntegerType.getInstance())) {
+    			index.insert(new BxTree.IntegerKey((Integer) key), rec.getRecordId());
+    		} else {
+    			index.insert(new BxTree.DoubleKey((Double) key), rec.getRecordId());
+    		}
+    	}
+    }
 
     @NotNull
     public Collection<Attribute> getSchema() {
         return attributes;
     }
 
-    public int insertRecord(@NotNull Object[] record) throws ExecutionException, UnsupportedEncodingException {
-        byte[] row = new byte[recordSize];
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public int insertRecord(@NotNull Object[] record) throws ExecutionException, UnsupportedEncodingException {
+    	byte[] row = new byte[recordSize];
 
         int pos = 0;
         int i = 0;
@@ -82,10 +113,24 @@ public class Table implements Iterable<Record> {
             pos += attrValue.length;
         }
 
-        return baseTable.insert(row);
+        int id = baseTable.insert(row);
+        
+    	for(Entry<Attribute, BxTree> entry: indexes.entrySet()) {
+    		Object key = record[indexOf(entry.getKey())];
+    		if(entry.getKey().getDataType().equals(Attribute.IntegerType.getInstance())) {
+    			entry.getValue().insert(new BxTree.IntegerKey((Integer) key), id);
+    		} else {
+    			entry.getValue().insert(new BxTree.DoubleKey((Double) key), id);
+    		}
+    	}
+        return id;
     }
     
-    public boolean remove(int recordId) {
+    private int indexOf(Attribute key) {
+		return atrToIdx.get(key);
+	}
+
+	public boolean remove(int recordId) {
         return baseTable.remove(recordId);
     }
 
