@@ -22,6 +22,7 @@ public class BufferManager {
     public final static long PAGE_SIZE = 1 << 12; // 4KB
     private final static int BUFFER_SIZE = 1 << 10; // in PAGE_SIZE's
     public final static int METAINF_FIRST_PAGE = 1;
+    public final static int INDEXES_FIRST_PAGE = 2;
 
     private final RandomAccessFile dbFile;
     private final ByteBuffer buffer = ByteBuffer.allocate((int) (PAGE_SIZE * BUFFER_SIZE));

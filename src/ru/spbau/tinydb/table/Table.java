@@ -76,18 +76,6 @@ public class Table implements Iterable<Record> {
 	public BxTree getIndex(Attribute atr) {
     	return indexes.get(atr);
     }
-    
-	public void createIndex(Attribute atr) {
-		// TODO
-    	BxTree index;
-		index = new BxTree(null, 1);
-    	
-    	for(Record rec: this) {
-    		Object key = rec.getAtributes().get(new SecondLevelId(tableName, atr.getAttributeName()));
-			index.insert((Integer) key, rec.getRecordId());
-    	}
-    	indexes.put(atr, index);
-    }
 
     @NotNull
     public Collection<Attribute> getSchema() {
