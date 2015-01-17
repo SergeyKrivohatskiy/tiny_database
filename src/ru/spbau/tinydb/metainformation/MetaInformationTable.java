@@ -54,7 +54,6 @@ public class MetaInformationTable {
         table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, META_TABLE_SCHEME, "metainf", new HashMap<>());
     }
 
-    @SuppressWarnings("rawtypes")
 	@Nullable
     public Table loadTable(@NotNull String name) {
     	// TODO refactor this method. Maybe too complicated loop here
@@ -112,13 +111,11 @@ public class MetaInformationTable {
         throw new DBException("Unknown type");
     }
     
-    private BxTree<BxTree.IntegerKey> integersToIndex(Map<SecondLevelId, Object> row) {
+    private BxTree integersToIndex(Map<SecondLevelId, Object> row) {
         if((Integer)row.get(VAL1_ID) == 1 && (Integer)row.get(VAL2_ID) != 0) {
-        	//int firstPage = (Integer)row.get(VAL2_ID);
-        	// TODO use firstPage to load index
-        	return new BxTree<BxTree.IntegerKey>(bufferManager, 100);
+        	int firstPage = (Integer)row.get(VAL2_ID);
+        	return new BxTree(bufferManager, firstPage);
         }
-        // TODO add "Double" index
 
         return null;
     }

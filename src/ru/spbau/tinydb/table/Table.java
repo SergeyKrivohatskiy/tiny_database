@@ -35,11 +35,9 @@ public class Table implements Iterable<Record> {
     @NotNull
     private final Collection<Attribute> attributes;
 	private final String tableName;
-	@SuppressWarnings("rawtypes")
 	private final Map<Attribute, BxTree> indexes;
 	private HashMap<Attribute, Integer> atrToIdx;
 
-    @SuppressWarnings("rawtypes")
 	public Table(@NotNull BufferManager bm, int firstPage, @NotNull Collection<Attribute> attributes,
     		String name, @NotNull Map<Attribute, BxTree> indexes) {
         int recordSize = 0;
@@ -75,24 +73,20 @@ public class Table implements Iterable<Record> {
         throw new DBException("Unsupported attribute type");
     }
     
-    @SuppressWarnings("rawtypes")
 	public BxTree getIndex(Attribute atr) {
     	return indexes.get(atr);
     }
     
-    public void createIndex(Attribute atr) {
-    	BxTree index = null;
-    	// TODO index creation(metainf table)
+	public void createIndex(Attribute atr) {
+		// TODO
+    	BxTree index;
+		index = new BxTree(null, 1);
     	
     	for(Record rec: this) {
     		Object key = rec.getAtributes().get(new SecondLevelId(tableName, atr.getAttributeName()));
-    		
-    		if(atr.getDataType().equals(Attribute.IntegerType.getInstance())) {
-    			index.insert(new BxTree.IntegerKey((Integer) key), rec.getRecordId());
-    		} else {
-    			index.insert(new BxTree.DoubleKey((Double) key), rec.getRecordId());
-    		}
+			index.insert((Integer) key, rec.getRecordId());
     	}
+    	indexes.put(atr, index);
     }
 
     @NotNull
@@ -100,7 +94,6 @@ public class Table implements Iterable<Record> {
         return attributes;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
 	public int insertRecord(@NotNull Object[] record) throws ExecutionException, UnsupportedEncodingException {
     	byte[] row = new byte[recordSize];
 
@@ -117,11 +110,7 @@ public class Table implements Iterable<Record> {
         
     	for(Entry<Attribute, BxTree> entry: indexes.entrySet()) {
     		Object key = record[indexOf(entry.getKey())];
-    		if(entry.getKey().getDataType().equals(Attribute.IntegerType.getInstance())) {
-    			entry.getValue().insert(new BxTree.IntegerKey((Integer) key), id);
-    		} else {
-    			entry.getValue().insert(new BxTree.DoubleKey((Double) key), id);
-    		}
+    		entry.getValue().insert((Integer) key, id);
     	}
         return id;
     }
