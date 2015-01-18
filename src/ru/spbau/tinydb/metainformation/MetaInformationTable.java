@@ -49,8 +49,8 @@ public class MetaInformationTable {
                     new Attribute("atrIdx", Attribute.IntegerType.getInstance()),
                     new Attribute("indexFirstPage", Attribute.IntegerType.getInstance()));
     private final static SecondLevelId TABLE_NAME = new SecondLevelId("indexes", "tableName");
-    private final static SecondLevelId ATR_IDX = new SecondLevelId("indexes", "atrName");
-    private final static SecondLevelId INDEX_FIRST_PAGE = new SecondLevelId("indexes", "indexFirstPage");;
+    private final static SecondLevelId ATR_IDX = new SecondLevelId("indexes", "atrIdx");
+    private final static SecondLevelId INDEX_FIRST_PAGE = new SecondLevelId("indexes", "indexFirstPage");
 
     @NotNull
     private final BufferManager bufferManager;
@@ -119,8 +119,7 @@ public class MetaInformationTable {
 		return indexes;
 	}
     
-    public boolean createIndex(String tableName, int atributeIdx) {
-    	assert(loadTable(tableName) != null);
+    public boolean createIndex(String tableName, int atributeIdx, String attributeName) {
     	for(Record rec: indexesTable) {
     		if(!tableName.equals((String) rec.getAtributes().get(TABLE_NAME))) {
     			continue;
@@ -132,8 +131,17 @@ public class MetaInformationTable {
     		}
     	}
     	try {
-        	Object[] indexRecord = {tableName, atributeIdx, bufferManager.getFreePage()};
+        	Table table = loadTable(tableName);
+        	int indexFirstPage = bufferManager.getFreePage();
+        	Object[] indexRecord = {tableName, atributeIdx, indexFirstPage};
 			indexesTable.insertRecord(indexRecord);
+			
+			BxTree index = new BxTree(bufferManager, indexFirstPage);
+			SecondLevelId atrId = new SecondLevelId(tableName, attributeName);
+			for(Record rec: table) {
+				Integer val = (Integer)rec.getAtributes().get(atrId);
+				index.insert(val, rec.getRecordId());
+			}
 			return true;
 		} catch (UnsupportedEncodingException e) {
 			// Cannot be

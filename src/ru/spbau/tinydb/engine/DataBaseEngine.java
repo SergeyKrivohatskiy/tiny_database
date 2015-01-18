@@ -212,7 +212,7 @@ public class DataBaseEngine implements AutoCloseable {
 	        	}
 	        	idx += 1;
 	        }
-			return metaInf.createIndex(tableName, idx);
+			return metaInf.createIndex(tableName, idx, attributeName);
 		}
     }
 }

@@ -60,6 +60,7 @@ public class BufferManager {
                 increaseLength();
                 //writeHeader(there is no header now)
                 increaseLength(); // for MetaInf Page
+                increaseLength(); // for Indexes Page
             } else {
                 //loadHeader(there is no header now)
             }
