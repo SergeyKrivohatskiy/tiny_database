@@ -34,6 +34,7 @@ public class Table implements Iterable<Record> {
 
     @NotNull
     private final Collection<Attribute> attributes;
+	private final Map<String, Attribute> atributeNameToAtribute;
 	private final String tableName;
 	private final Map<Attribute, BxTree> indexes;
 	private HashMap<Attribute, Integer> atrToIdx;
@@ -49,14 +50,20 @@ public class Table implements Iterable<Record> {
         this.recordSize = recordSize;
         this.attributes = attributes;
         this.atrToIdx = new HashMap<>();
+        atributeNameToAtribute = new HashMap<>();
         int i = 0;
         for(Attribute atr: attributes) {
         	atrToIdx.put(atr, i);
+        	atributeNameToAtribute.put(atr.getAttributeName(), atr);
         	i += 1;
         }
         tableName = name;
         baseTable = new TableBase(bm, firstPage, recordSize);
     }
+	
+	public Attribute getAtrByName(String atrName) {
+		return atributeNameToAtribute.get(atrName);
+	}
 
     private int getAttrSize(@NotNull Attribute attribute) {
         if (attribute.getDataType() instanceof IntegerType) {

@@ -1,12 +1,18 @@
 package ru.spbau.tinydb.utils;
 
+import ru.spbau.tinydb.btree.BxTreeEntry;
 import ru.spbau.tinydb.queries.Attribute;
+import ru.spbau.tinydb.queries.SecondLevelId;
+import ru.spbau.tinydb.table.Record;
+import ru.spbau.tinydb.table.Table;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * tiny_database
@@ -69,4 +75,40 @@ public class Utils {
             System.out.println(Arrays.toString(cursor.next()));
         }
     }
+    public static Iterator<Record> indexIterToRecordIter(Table table,
+			Iterator<BxTreeEntry> indexIter) {
+		return new Iterator<Record>() {
+			private Record rec = getNext();
+			@Override
+			public Record next() {
+				if(!hasNext()) {
+					throw new IllegalStateException();
+				}
+				Record oldRec = rec;
+				rec = getNext();
+				return oldRec;
+			}
+			
+			private Record getNext() {
+				try {
+					while(indexIter.hasNext()) {
+						BxTreeEntry entry = indexIter.next();
+						int recordId = entry.value;
+						Map<SecondLevelId, Object> atrs = table.getRecord(recordId);
+						if(atrs != null) {
+							return new Record(atrs, recordId);
+						}
+					}
+					return null;
+				} catch (ExecutionException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			@Override
+			public boolean hasNext() {
+				return rec != null;
+			}
+		};
+	}
 }

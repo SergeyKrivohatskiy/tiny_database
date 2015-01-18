@@ -8,16 +8,19 @@ import ru.spbau.tinydb.btree.BxTreeEntry;
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.cursors.AtributesCursor;
+import ru.spbau.tinydb.cursors.IndexJoinCursor;
 import ru.spbau.tinydb.cursors.NLJoinCursor;
 import ru.spbau.tinydb.cursors.WhereCursor;
 import ru.spbau.tinydb.expressions.comparison.JoinOnExpression;
 import ru.spbau.tinydb.metainformation.MetaInformationTable;
 import ru.spbau.tinydb.queries.Attribute;
+import ru.spbau.tinydb.queries.Attribute.IntegerType;
 import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.queries.SelectionTable;
 import ru.spbau.tinydb.queries.WhereCondition;
 import ru.spbau.tinydb.table.Record;
 import ru.spbau.tinydb.table.Table;
+import ru.spbau.tinydb.utils.Utils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -187,15 +190,22 @@ public class DataBaseEngine implements AutoCloseable {
 			Iterator<Record> recordCursor = executeFilter(filter, table);
             Iterator<Map<SecondLevelId, Object>> resultCursor = new AtributesCursor(recordCursor);
 
-            for (JoinOnExpression joinExpression : tableSelection.getExpressions()) {
-                final Table joinTable = findTable(joinExpression.getTableName());
-
-                resultCursor = new NLJoinCursor(resultCursor, new Iterable<Map<SecondLevelId, Object>>() {
-                    @Override
-                    public Iterator<Map<SecondLevelId, Object>> iterator() {
-                        return new AtributesCursor(joinTable.iterator());
-                    }
-                }, joinExpression);
+            for (JoinOnExpression jExp : tableSelection.getExpressions()) {
+                Table joinTable = findTable(jExp.getSecondId().getTableName());
+				Attribute joinAtr = joinTable.getAtrByName(jExp.getSecondId().getAttributeName());
+				boolean isIntegerAtr = joinAtr.getDataType().equals(IntegerType.getInstance());
+				BxTree index = joinTable.getIndex(joinAtr);
+				
+				if(isIntegerAtr && index != null) {
+					resultCursor = new IndexJoinCursor(resultCursor, joinTable, index, jExp.getFirstId());
+                } else {
+	                resultCursor = new NLJoinCursor(resultCursor, new Iterable<Map<SecondLevelId, Object>>() {
+	                    @Override
+	                    public Iterator<Map<SecondLevelId, Object>> iterator() {
+	                        return new AtributesCursor(joinTable.iterator());
+	                    }
+	                }, jExp);
+                }
             }
 
             return resultCursor;
@@ -203,6 +213,9 @@ public class DataBaseEngine implements AutoCloseable {
 
 		private Iterator<Record> executeFilter(WhereCondition filter,
 				Table table) {
+			if(filter == null) {
+				return table.iterator();
+			}
 			Attribute atr = getAtr(filter);
 			if(atr != null) {
 				BxTree index = table.getIndex(atr);
@@ -214,47 +227,12 @@ public class DataBaseEngine implements AutoCloseable {
 				
 				Iterator<BxTreeEntry> indexIter = index.find(from, to, includeFrom, includeTo);
 				
-				return indexIterToRecordIter(table, indexIter);
+				return Utils.indexIterToRecordIter(table, indexIter);
 			}
-			return new WhereCursor(table .iterator(), filter);
+			return new WhereCursor(table.iterator(), filter);
 		}
 
-		private Iterator<Record> indexIterToRecordIter(Table table,
-				Iterator<BxTreeEntry> indexIter) {
-			return new Iterator<Record>() {
-				private Record rec = getNext();
-				@Override
-				public Record next() {
-					if(!hasNext()) {
-						throw new IllegalStateException();
-					}
-					Record oldRec = rec;
-					rec = getNext();
-					return oldRec;
-				}
-				
-				private Record getNext() {
-					try {
-						while(indexIter.hasNext()) {
-							BxTreeEntry entry = indexIter.next();
-							int recordId = entry.value;
-							Map<SecondLevelId, Object> atrs = table.getRecord(recordId);
-							if(atrs != null) {
-								return new Record(atrs, recordId);
-							}
-						}
-						return null;
-					} catch (ExecutionException e) {
-						throw new RuntimeException(e);
-					}
-				}
-
-				@Override
-				public boolean hasNext() {
-					return rec != null;
-				}
-			};
-		}
+		
 
 		private Attribute getAtr(WhereCondition filter) {
 			// TODO Auto-generated method stub
