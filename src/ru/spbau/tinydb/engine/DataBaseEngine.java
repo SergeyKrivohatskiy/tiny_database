@@ -3,6 +3,8 @@ package ru.spbau.tinydb.engine;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import ru.spbau.tinydb.btree.BxTree;
+import ru.spbau.tinydb.btree.BxTreeEntry;
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.cursors.AtributesCursor;
@@ -72,7 +74,7 @@ public class DataBaseEngine implements AutoCloseable {
         @Override
         public int delete(@NotNull String tableName, @NotNull WhereCondition filter) throws DBException {
             Table table = findTable(tableName);
-            Iterator<Record> recordIterator = new WhereCursor(table.iterator(), filter);
+            Iterator<Record> recordIterator = executeFilter(filter, table);
             int removed = 0;
 
             while (recordIterator.hasNext()) {
@@ -179,11 +181,13 @@ public class DataBaseEngine implements AutoCloseable {
 
         @Override
         @NotNull
-        public Iterator<Map<SecondLevelId, Object>> select(@NotNull SelectionTable table, @Nullable WhereCondition filter) {
-            Iterator<Record> recordCursor = new WhereCursor(findTable(table.getTableName()).iterator(), filter);
+        public Iterator<Map<SecondLevelId, Object>> select(@NotNull SelectionTable tableSelection, @Nullable WhereCondition filter) {
+            Table table = findTable(tableSelection.getTableName());
+            
+			Iterator<Record> recordCursor = executeFilter(filter, table);
             Iterator<Map<SecondLevelId, Object>> resultCursor = new AtributesCursor(recordCursor);
 
-            for (JoinOnExpression joinExpression : table.getExpressions()) {
+            for (JoinOnExpression joinExpression : tableSelection.getExpressions()) {
                 final Table joinTable = findTable(joinExpression.getTableName());
 
                 resultCursor = new NLJoinCursor(resultCursor, new Iterable<Map<SecondLevelId, Object>>() {
@@ -196,6 +200,66 @@ public class DataBaseEngine implements AutoCloseable {
 
             return resultCursor;
         }
+
+		private Iterator<Record> executeFilter(WhereCondition filter,
+				Table table) {
+			Attribute atr = getAtr(filter);
+			if(atr != null) {
+				BxTree index = table.getIndex(atr);
+				// TODO filter to index request
+				int from = 0;
+				int to = 0;
+				boolean includeFrom = false;
+				boolean includeTo = false;
+				
+				Iterator<BxTreeEntry> indexIter = index.find(from, to, includeFrom, includeTo);
+				
+				return indexIterToRecordIter(table, indexIter);
+			}
+			return new WhereCursor(table .iterator(), filter);
+		}
+
+		private Iterator<Record> indexIterToRecordIter(Table table,
+				Iterator<BxTreeEntry> indexIter) {
+			return new Iterator<Record>() {
+				private Record rec = getNext();
+				@Override
+				public Record next() {
+					if(!hasNext()) {
+						throw new IllegalStateException();
+					}
+					Record oldRec = rec;
+					rec = getNext();
+					return oldRec;
+				}
+				
+				private Record getNext() {
+					try {
+						while(indexIter.hasNext()) {
+							BxTreeEntry entry = indexIter.next();
+							int recordId = entry.value;
+							Map<SecondLevelId, Object> atrs = table.getRecord(recordId);
+							if(atrs != null) {
+								return new Record(atrs, recordId);
+							}
+						}
+						return null;
+					} catch (ExecutionException e) {
+						throw new RuntimeException(e);
+					}
+				}
+
+				@Override
+				public boolean hasNext() {
+					return rec != null;
+				}
+			};
+		}
+
+		private Attribute getAtr(WhereCondition filter) {
+			// TODO Auto-generated method stub
+			return null;
+		}
 
 		@Override
 		public boolean createIndex(String tableName, List<String> attributeNames)
