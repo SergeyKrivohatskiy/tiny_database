@@ -55,7 +55,7 @@ public class CreateIndexQuery extends TableNameContainer implements IQuery<Boole
     @Override
     @NotNull
     public Boolean execute(@NotNull IDataBase instance) throws DBException {
-        throw new DBException(new UnsupportedOperationException("unsupported create index operation"));
+    	return instance.createIndex(getTableName(), getAttributeNames());
     }
 
     @NotNull

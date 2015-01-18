@@ -2,6 +2,7 @@ package ru.spbau.tinydb.engine;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.cursors.AtributesCursor;
@@ -195,5 +196,23 @@ public class DataBaseEngine implements AutoCloseable {
 
             return resultCursor;
         }
+
+		@Override
+		public boolean createIndex(String tableName, List<String> attributeNames)
+				throws DBException {
+			if(attributeNames.size() != 1) {
+				throw new DBException("Index for 1 atribute only");
+			}
+        	String attributeName = attributeNames.get(0);
+			Table table = findTable(tableName);
+			int idx = 0;
+			for(Attribute atr: table.getSchema()) {
+				if(atr.getAttributeName().equals(attributeName)) {
+	        		break;
+	        	}
+	        	idx += 1;
+	        }
+			return metaInf.createIndex(tableName, idx);
+		}
     }
 }

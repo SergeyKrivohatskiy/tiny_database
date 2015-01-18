@@ -2,6 +2,7 @@ package ru.spbau.tinydb.engine;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.queries.Attribute;
 import ru.spbau.tinydb.queries.SecondLevelId;
@@ -30,4 +31,6 @@ public interface IDataBase extends AutoCloseable {
 
     @NotNull
     public Iterator<Map<SecondLevelId, Object>> select(@NotNull SelectionTable table, @Nullable WhereCondition filter);
+
+	public boolean createIndex(String tableName, List<String> attributeNames) throws DBException;
 }
