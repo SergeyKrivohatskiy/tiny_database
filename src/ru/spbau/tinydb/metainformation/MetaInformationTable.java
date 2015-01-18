@@ -106,10 +106,10 @@ public class MetaInformationTable {
         return null;
     }
 
-    private Map<Attribute, BxTree> loadIndexes(String name, List<Attribute> attributes) {
+    private Map<Attribute, BxTree> loadIndexes(String tableName, List<Attribute> attributes) {
     	Map<Attribute, BxTree> indexes = new HashMap<>();
     	for(Record rec: indexesTable) {
-    		if(!name.equals((String) rec.getAtributes().get(TABLE_NAME))) {
+    		if(!tableName.equals((String) rec.getAtributes().get(TABLE_NAME))) {
     			continue;
     		}
     		Integer firstPage = (Integer) rec.getAtributes().get(INDEX_FIRST_PAGE);
@@ -118,6 +118,30 @@ public class MetaInformationTable {
     	}
 		return indexes;
 	}
+    
+    public boolean createIndex(String tableName, int atributeIdx) {
+    	assert(loadTable(tableName) != null);
+    	for(Record rec: indexesTable) {
+    		if(!tableName.equals((String) rec.getAtributes().get(TABLE_NAME))) {
+    			continue;
+    		}
+    		Integer atrIdx = (Integer) rec.getAtributes().get(ATR_IDX);
+    		if(atrIdx == atributeIdx) {
+    			// Index already exists
+    			return false;
+    		}
+    	}
+    	try {
+        	Object[] indexRecord = {tableName, atributeIdx, bufferManager.getFreePage()};
+			indexesTable.insertRecord(indexRecord);
+			return true;
+		} catch (UnsupportedEncodingException e) {
+			// Cannot be
+			throw new RuntimeException(e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e);
+		}
+    }
 
 	@NotNull
     private Attribute.DataType integersToType(Map<SecondLevelId, Object> row) {

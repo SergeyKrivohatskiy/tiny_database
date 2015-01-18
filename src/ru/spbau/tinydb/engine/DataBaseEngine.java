@@ -119,6 +119,7 @@ public class DataBaseEngine implements AutoCloseable {
         private Table findTable(@NotNull String tableName) throws DBException {
         	// This is O(Table sizes sum) operation
         	// TODO create table cache here or inside of metaInf
+        	// Do not forget about indexes
             Table table = metaInf.loadTable(tableName);
 
             if (table == null) {
