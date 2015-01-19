@@ -3,6 +3,7 @@ package ru.spbau.tinydb.cursors;
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.expressions.comparison.JoinOnExpression;
 import ru.spbau.tinydb.queries.SecondLevelId;
+import ru.spbau.tinydb.utils.Utils;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,20 +39,13 @@ public class NLJoinCursor implements Iterator<Map<SecondLevelId, Object>> {
                 secondCursor = iterable.iterator();
             }
             while (secondCursor.hasNext()) {
-                Map<SecondLevelId, Object> val = join(firstVal, secondCursor.next());
+                Map<SecondLevelId, Object> val = Utils.join(firstVal, secondCursor.next());
                 if (eqAttrs.execute(val)) {
                     return val;
                 }
             }
             firstVal = null;
         }
-    }
-
-    private Map<SecondLevelId, Object> join(Map<SecondLevelId, Object> firstVal, Map<SecondLevelId, Object> secondVal) {
-        Map<SecondLevelId, Object> result = new HashMap<>();
-        result.putAll(firstVal);
-        result.putAll(secondVal);
-        return result;
     }
     
     @Override

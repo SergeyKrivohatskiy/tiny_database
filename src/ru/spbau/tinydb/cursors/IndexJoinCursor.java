@@ -38,7 +38,18 @@ public class IndexJoinCursor implements Iterator<Map<SecondLevelId, Object>> {
 			Map<SecondLevelId, Object> tmp = baseCursor.next();
 			Integer key = (Integer) tmp.get(id);
 			Iterator<Record> iter = Utils.indexIterToRecordIter(joinTable, index.find(key, key, true, true));
-			secondCursor = new AtributesCursor(iter);
+			secondCursor = new Iterator<Map<SecondLevelId,Object>>() {
+				private final Iterator<Map<SecondLevelId,Object>> base = new AtributesCursor(iter);
+				@Override
+				public boolean hasNext() {
+					return base.hasNext();
+				}
+
+				@Override
+				public Map<SecondLevelId, Object> next() {
+					return Utils.join(tmp, base.next());
+				}
+			};
 		}
 	}
 

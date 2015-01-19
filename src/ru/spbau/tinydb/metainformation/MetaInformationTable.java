@@ -58,6 +58,8 @@ public class MetaInformationTable {
     private final Table table;
     @NotNull
     private final Table indexesTable;
+    private static final int MAX_TABLE_CACHE_ITEMS = 10;
+    private final Map<String, Table> tableCache = new HashMap<>();
 
     public MetaInformationTable(@NotNull BufferManager bufferManager) {
         this.bufferManager = bufferManager;
@@ -69,8 +71,11 @@ public class MetaInformationTable {
     
 	@Nullable
     public Table loadTable(@NotNull String name) {
-    	// TODO refactor this method. Maybe too complicated loop here
-    	// makes full scan
+
+		if(tableCache.containsKey(name)) {
+			return tableCache.get(name);
+		}
+		
         int ignore = 0;
         int attributesCount = 0;
         int firstPage = 0;
@@ -89,8 +94,13 @@ public class MetaInformationTable {
                 attributes.add(atr);
                 if(attributesCount == 0) {
             		Map<Attribute, BxTree> indexes = loadIndexes(name, attributes);
-                    return new Table(bufferManager, firstPage, 
+                    Table result = new Table(bufferManager, firstPage, 
                     		attributes, name, indexes);
+                    if(tableCache.size() == MAX_TABLE_CACHE_ITEMS) {
+                    	tableCache.remove(tableCache.keySet().iterator().next());
+                    }
+                    tableCache.put(name, result);
+                    return result;
                 }
                 continue;
             }
@@ -142,6 +152,7 @@ public class MetaInformationTable {
 				Integer val = (Integer)rec.getAtributes().get(atrId);
 				index.insert(val, rec.getRecordId());
 			}
+			tableCache.remove(tableName);
 			return true;
 		} catch (UnsupportedEncodingException e) {
 			// Cannot be

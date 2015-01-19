@@ -29,7 +29,7 @@ import ru.spbau.tinydb.queries.WhereCondition;
  */
 public class IndexTest {
 
-    private static final int COUNT = 1000;
+    private static final int COUNT = 100;
 
     public static void main(String[] args) throws IOException, ExecutionException {
         testTable();
@@ -38,18 +38,26 @@ public class IndexTest {
     private static void testTable() throws FileNotFoundException, ExecutionException, UnsupportedEncodingException {
         new File("db_test").delete();
         IDataBase db = DataBaseEngine.getDBInstance("db_test");
-        List<Attribute> idSchema = Arrays.asList(new Attribute("id", Attribute.IntegerType.getInstance()),
+        List<Attribute> table1Schema = Arrays.asList(new Attribute("id", Attribute.IntegerType.getInstance()),
         		new Attribute("string", new Attribute.VarcharType(245)));
-        db.createTable("test_table1", idSchema);
-        db.createTable("test_table2", idSchema);
-        List<String> idAtrs = Arrays.asList("id", "string");
-        
+        List<Attribute> table2Schema = Arrays.asList(new Attribute("id", Attribute.IntegerType.getInstance()),
+        		new Attribute("id_div10", Attribute.IntegerType.getInstance()));
+        db.createTable("test_table1", table1Schema);
+        db.createTable("test_table2", table2Schema);
+        List<String> table1Atrs = Arrays.asList("id", "string");
+        List<String> table2Atrs = Arrays.asList("id", "id_div10");
+
+		long time;
+        time = System.nanoTime();
         for(int i = 0; i < COUNT; i ++) {
-        	db.insert("test_table1", idAtrs, Arrays.asList(i, "test value table 1 id " + i));
-        	db.insert("test_table2", idAtrs, Arrays.asList(i, "test value table 2 id " + i));
+        	db.insert("test_table1", table1Atrs, Arrays.asList(i, "test value table 1 id " + i));
+        	db.insert("test_table2", table2Atrs, Arrays.asList(i, i / 10));
         }
+        time = (System.nanoTime() - time) / 1000000;
+        System.out.println("Load time is " + time + "ms");
+        
         SecondLevelId id1 = new SecondLevelId("test_table1", "id");
-        SecondLevelId id2 = new SecondLevelId("test_table2", "id");
+        SecondLevelId id2 = new SecondLevelId("test_table2", "id_div10");
         WhereCondition where = new WhereCondition(new BooleanExpression(new OrExpression(new AndExpression(new BooleanFactor(
         		new EqualExpression<Integer>(id1, COUNT / 3)), false), null), null));
 
@@ -62,7 +70,7 @@ public class IndexTest {
         checkJoin(db, id1, id2);
 
         db.createIndex("test_table1", Arrays.asList("id"));
-        db.createIndex("test_table2", Arrays.asList("id"));
+        db.createIndex("test_table2", Arrays.asList("id_div10"));
         
         System.out.println("index created");
         checkSelect(db, where);
@@ -95,7 +103,7 @@ public class IndexTest {
         	result.next();
         }
         time = (System.nanoTime() - time) / 1000000;
-        System.out.println("Select where id == CONST | " + count + " results | Time is " + time + "ms");
+        System.out.println("Join | " + count + " results | Time is " + time + "ms");
 	}
 
 }

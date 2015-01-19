@@ -136,6 +136,9 @@ public class Table implements Iterable<Record> {
 
 	public Map<SecondLevelId, Object> getRecord(int recordId) throws ExecutionException {
         try (BufferView recordView = baseTable.get(recordId)) {
+        	if(recordView == null) {
+        		return null;
+        	}
             return getRecordFromView(recordView);
         }
     }

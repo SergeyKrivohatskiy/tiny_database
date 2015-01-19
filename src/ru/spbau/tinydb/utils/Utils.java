@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -110,5 +111,29 @@ public class Utils {
 				return rec != null;
 			}
 		};
+	}
+    
+    public static <T> Iterator<T> emptyIterator() {
+		return new Iterator<T>() {
+
+			@Override
+			public boolean hasNext() {
+				return false;
+			}
+
+			@Override
+			public T next() {
+				throw new IllegalStateException();
+			}
+		};
+    }
+
+	public static Map<SecondLevelId, Object> join(
+			Map<SecondLevelId, Object> firstVal,
+			Map<SecondLevelId, Object> secondVal) {
+		Map<SecondLevelId, Object> result = new HashMap<>();
+		result.putAll(firstVal);
+		result.putAll(secondVal);
+		return result;
 	}
 }
