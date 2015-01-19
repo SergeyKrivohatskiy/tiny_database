@@ -2,7 +2,6 @@ package ru.spbau.tinydb.queries;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.engine.IDataBase;
 
@@ -54,6 +53,6 @@ public class SelectFromQuery implements IQuery<Iterator<Map<SecondLevelId, Objec
                 "table=" + table +
                 ", attributes=" + attributes +
                 ", filter=" + filter +
-                "} " + super.toString();
+                "} ";
     }
 }
