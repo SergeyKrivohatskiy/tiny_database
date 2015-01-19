@@ -79,6 +79,10 @@ public abstract class Node {
 	protected int getData(int index) {
 		return getInt(pageIndex, bm, DATA_OFFSET + 8 * index + 4);
 	}
+
+	protected void setData(int index, int value) {
+		setInt(pageIndex, bm, DATA_OFFSET + 8 * index + 4, value);
+	}
 	
 	protected void insert(int index, int key, int data) {
 		int size = getSize();
@@ -100,6 +104,10 @@ public abstract class Node {
 		dataView.close();
 		
 		setSize(size + 1);
+	}
+
+	protected void setIndexType() {
+		setInt(pageIndex, bm, 0, 1);
 	}
 
 	public int getPageIndex() {

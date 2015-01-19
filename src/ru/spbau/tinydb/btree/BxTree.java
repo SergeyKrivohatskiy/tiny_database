@@ -37,6 +37,13 @@ public class BxTree {
 
 	public void insert(int key, int recordId) {
 		Split split = root.insert(key, recordId);
+        if (split != null) {
+            // The old root was splitted in two parts.
+            // We have to create a new root pointing to them
+        	root = new IndexNode(bm.getFreePage(), bm, split);
+        	rootPageIndex = root.pageIndex;
+        	writeHeader();
+        }
 	}
 	
 	public Iterator<BxTreeEntry> find(int from, int to, boolean includeFrom, boolean includeTo) {

@@ -14,11 +14,33 @@ public class LeafNode extends Node {
 	@Override
 	public Split insert(int key, int value) {
 		int size = getSize();
-		if(size == N) {
+		int i = findKey(key, true);
+		if(size != N) {
+			insert(i, key, value);
 			return null;
 		}
-		insert(findKey(key, true), key, value);
-		return null;
+		int mid = (N + 1) / 2;
+        int sNum = N - mid;
+        LeafNode sibling = new LeafNode(bm.getFreePage(), bm);
+
+        for(int j = 0; j < sNum; j ++) {
+        	sibling.insert(j, getKey(mid + j), getData(mid + j));
+        }
+        
+        sibling.setLink(getLink());
+        setLink(sibling.pageIndex);
+        setSize(mid);
+        
+        if (i < mid) {
+            // Inserted element goes to left sibling
+            this.insert(i, key, value);
+        } else {
+            // Inserted element goes to right sibling
+            sibling.insert(i - mid, key, value);
+        }
+        // Notify the parent about the split
+        Split result = new Split(sibling.getKey(0), this.pageIndex, sibling.pageIndex);
+        return result;
 	}
 
 	@Override

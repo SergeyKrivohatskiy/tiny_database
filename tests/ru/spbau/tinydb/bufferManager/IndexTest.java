@@ -29,7 +29,7 @@ import ru.spbau.tinydb.queries.WhereCondition;
  */
 public class IndexTest {
 
-    private static final int COUNT = 100;
+    private static final int COUNT = 2000;
 
     public static void main(String[] args) throws IOException, ExecutionException {
         testTable();
@@ -57,7 +57,7 @@ public class IndexTest {
         System.out.println("Load time is " + time + "ms");
         
         SecondLevelId id1 = new SecondLevelId("test_table1", "id");
-        SecondLevelId id2 = new SecondLevelId("test_table2", "id_div10");
+        SecondLevelId id2 = new SecondLevelId("test_table2", "id");
         WhereCondition where = new WhereCondition(new BooleanExpression(new OrExpression(new AndExpression(new BooleanFactor(
         		new EqualExpression<Integer>(id1, COUNT / 3)), false), null), null));
 
@@ -69,8 +69,8 @@ public class IndexTest {
         checkSelect(db, where);
         checkJoin(db, id1, id2);
 
-        db.createIndex("test_table1", Arrays.asList("id"));
-        db.createIndex("test_table2", Arrays.asList("id_div10"));
+        //db.createIndex("test_table1", Arrays.asList("id"));
+        db.createIndex("test_table2", Arrays.asList("id"));
         
         System.out.println("index created");
         checkSelect(db, where);
