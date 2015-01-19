@@ -58,9 +58,9 @@ public class MetaInformationTable {
     public MetaInformationTable(@NotNull BufferManager bufferManager) {
         this.bufferManager = bufferManager;
         table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, 
-        		META_TABLE_SCHEME, "metainf", new HashMap<>());
+        		META_TABLE_SCHEME, "metainf", new HashMap<Attribute, BxTree>());
         indexesTable = new Table(bufferManager, BufferManager.INDEXES_FIRST_PAGE, 
-        		INDEXES_TABLE_SCHEME, "indexes", new HashMap<>());
+        		INDEXES_TABLE_SCHEME, "indexes", new HashMap<Attribute, BxTree>());
     }
     
 	@Nullable
@@ -178,7 +178,7 @@ public class MetaInformationTable {
         for (Attribute attribute : schema) {
             table.insertRecord(createRecord(attribute));
         }
-        return new Table(bufferManager, firstPage, schema, name, new HashMap<>());
+        return new Table(bufferManager, firstPage, schema, name, new HashMap<Attribute, BxTree>());
     }
 
     @NotNull

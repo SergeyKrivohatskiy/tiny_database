@@ -1,5 +1,6 @@
 package ru.spbau.tinydb.bufferManager;
 
+import ru.spbau.tinydb.btree.BxTree;
 import ru.spbau.tinydb.queries.Attribute;
 import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.table.Record;
@@ -36,7 +37,7 @@ public class TableTest {
         Collection<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("Test int attr", Attribute.IntegerType.getInstance()));
         attributes.add(new Attribute("Test varchar attr", new Attribute.VarcharType(32)));
-        Table table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, attributes, "name", new HashMap<>());
+        Table table = new Table(bufferManager, BufferManager.METAINF_FIRST_PAGE, attributes, "name", new HashMap<Attribute, BxTree>());
         Object[] record = new Object[2];
         record[0] = 123454;
         record[1] = "value";

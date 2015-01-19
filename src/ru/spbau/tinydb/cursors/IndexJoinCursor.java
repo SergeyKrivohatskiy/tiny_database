@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import ru.spbau.tinydb.btree.BxTree;
+import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.table.Record;
 import ru.spbau.tinydb.table.Table;
@@ -35,9 +36,9 @@ public class IndexJoinCursor implements Iterator<Map<SecondLevelId, Object>> {
 			if(!baseCursor.hasNext()) {
 				return null;
 			}
-			Map<SecondLevelId, Object> tmp = baseCursor.next();
+			final Map<SecondLevelId, Object> tmp = baseCursor.next();
 			Integer key = (Integer) tmp.get(id);
-			Iterator<Record> iter = Utils.indexIterToRecordIter(joinTable, index.find(key, key, true, true));
+			final Iterator<Record> iter = Utils.indexIterToRecordIter(joinTable, index.find(key, key, true, true));
 			secondCursor = new Iterator<Map<SecondLevelId,Object>>() {
 				private final Iterator<Map<SecondLevelId,Object>> base = new AtributesCursor(iter);
 				@Override
@@ -48,6 +49,11 @@ public class IndexJoinCursor implements Iterator<Map<SecondLevelId, Object>> {
 				@Override
 				public Map<SecondLevelId, Object> next() {
 					return Utils.join(tmp, base.next());
+				}
+
+				@Override
+				public void remove() {
+					throw new RuntimeException();
 				}
 			};
 		}
@@ -66,6 +72,11 @@ public class IndexJoinCursor implements Iterator<Map<SecondLevelId, Object>> {
 		Map<SecondLevelId, Object> oldRow = row;
 		row = getRow();
 		return oldRow;
+	}
+
+	@Override
+	public void remove() {
+        throw new DBException("Remove is not implemented for IndexJoinCursor cursor");
 	}
 
 }

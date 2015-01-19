@@ -190,7 +190,7 @@ public class DataBaseEngine implements AutoCloseable {
             Iterator<Map<SecondLevelId, Object>> resultCursor = new AtributesCursor(recordCursor);
 
             for (JoinOnExpression jExp : tableSelection.getExpressions()) {
-                Table joinTable = findTable(jExp.getSecondId().getTableName());
+                final Table joinTable = findTable(jExp.getSecondId().getTableName());
 				Attribute joinAtr = joinTable.getAtrByName(jExp.getSecondId().getAttributeName());
 				boolean isIntegerAtr = joinAtr.getDataType().equals(IntegerType.getInstance());
 				BxTree index = joinTable.getIndex(joinAtr);

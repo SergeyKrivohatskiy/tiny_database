@@ -44,7 +44,7 @@ public class LeafNode extends Node {
 	}
 
 	@Override
-	public Iterator<BxTreeEntry> find(int key, boolean includeKey) {
+	public Iterator<BxTreeEntry> find(final int key, final boolean includeKey) {
 		int size = getSize();
 		if(size == 0) {
 			return Utils.emptyIterator();
@@ -81,10 +81,15 @@ public class LeafNode extends Node {
 				val = getNext();
 				return old;
 			}
+
+			@Override
+			public void remove() {
+				throw new RuntimeException();
+			}
 		};
 	}
 	
-	private Iterator<BxTreeEntry> baseFind(int key, boolean includeKey) {
+	private Iterator<BxTreeEntry> baseFind(final int key, final boolean includeKey) {
 		return new Iterator<BxTreeEntry>() {
 			private int index = findKey(key, includeKey); 
 			private int size = getSize();
@@ -101,6 +106,11 @@ public class LeafNode extends Node {
 				BxTreeEntry result = new BxTreeEntry(getKey(index), getData(index));
 				index ++;
 				return result;
+			}
+
+			@Override
+			public void remove() {
+				throw new RuntimeException();
 			}
 		};
 	}

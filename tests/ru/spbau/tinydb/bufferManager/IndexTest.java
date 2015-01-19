@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +50,8 @@ public class IndexTest {
 		long time;
         time = System.nanoTime();
         for(int i = 0; i < COUNT; i ++) {
-        	db.insert("test_table1", table1Atrs, Arrays.asList(i, "test value table 1 id " + i));
-        	db.insert("test_table2", table2Atrs, Arrays.asList(i, i / 10));
+        	db.insert("test_table1", table1Atrs, Arrays.asList((Object)i, (Object)("test value table 1 id " + i)));
+        	db.insert("test_table2", table2Atrs, Arrays.asList((Object)i, (Object)(i / 10)));
         }
         time = (System.nanoTime() - time) / 1000000;
         System.out.println("Load time is " + time + "ms");
@@ -80,7 +80,7 @@ public class IndexTest {
 	private static void checkSelect(IDataBase db, WhereCondition where) {
 		long time;
         time = System.nanoTime();
-        Iterator<Map<SecondLevelId, Object>> result = db.select(new SelectionTable("test_table1", Collections.emptyList()), where);
+        Iterator<Map<SecondLevelId, Object>> result = db.select(new SelectionTable("test_table1", new ArrayList<JoinOnExpression>()), where);
         
         int count = 0;
         while(result.hasNext()) {

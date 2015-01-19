@@ -46,8 +46,8 @@ public class BxTree {
         }
 	}
 	
-	public Iterator<BxTreeEntry> find(int from, int to, boolean includeFrom, boolean includeTo) {
-		Iterator<BxTreeEntry> baseIter = root.find(from, includeFrom); // >(or >=) from iterator
+	public Iterator<BxTreeEntry> find(int from, final int to, boolean includeFrom, final boolean includeTo) {
+		final Iterator<BxTreeEntry> baseIter = root.find(from, includeFrom); // >(or >=) from iterator
 		
 		return new Iterator<BxTreeEntry>() {
 			private BxTreeEntry entry = getNext();
@@ -74,6 +74,11 @@ public class BxTree {
 			@Override
 			public boolean hasNext() {
 				return entry != null;
+			}
+
+			@Override
+			public void remove() {
+				throw new RuntimeException();
 			}
 		};
 	}

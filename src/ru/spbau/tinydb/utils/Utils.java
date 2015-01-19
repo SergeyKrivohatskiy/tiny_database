@@ -76,8 +76,8 @@ public class Utils {
             System.out.println(Arrays.toString(cursor.next()));
         }
     }
-    public static Iterator<Record> indexIterToRecordIter(Table table,
-			Iterator<BxTreeEntry> indexIter) {
+    public static Iterator<Record> indexIterToRecordIter(final Table table,
+			final Iterator<BxTreeEntry> indexIter) {
 		return new Iterator<Record>() {
 			private Record rec = getNext();
 			@Override
@@ -110,6 +110,11 @@ public class Utils {
 			public boolean hasNext() {
 				return rec != null;
 			}
+
+			@Override
+			public void remove() {
+				throw new IllegalStateException();
+			}
 		};
 	}
     
@@ -124,6 +129,11 @@ public class Utils {
 			@Override
 			public T next() {
 				throw new IllegalStateException();
+			}
+
+			@Override
+			public void remove() {
+				throw new RuntimeException();
 			}
 		};
     }
