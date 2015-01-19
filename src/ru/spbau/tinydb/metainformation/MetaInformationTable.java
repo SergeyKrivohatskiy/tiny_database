@@ -2,7 +2,6 @@ package ru.spbau.tinydb.metainformation;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import ru.spbau.tinydb.btree.BxTree;
 import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.common.DBException;
@@ -15,12 +14,7 @@ import ru.spbau.tinydb.table.Record;
 import ru.spbau.tinydb.table.Table;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -81,7 +75,7 @@ public class MetaInformationTable {
         int firstPage = 0;
         List<Attribute> attributes = null;
         for(Record rec: table) {
-            Map<SecondLevelId, Object> recAtributes = rec.getAtributes();
+            Map<SecondLevelId, Object> recAtributes = rec.getAttributes();
             if(ignore != 0) {
                 ignore -= 1;
                 continue;
@@ -119,11 +113,11 @@ public class MetaInformationTable {
     private Map<Attribute, BxTree> loadIndexes(String tableName, List<Attribute> attributes) {
     	Map<Attribute, BxTree> indexes = new HashMap<>();
     	for(Record rec: indexesTable) {
-    		if(!tableName.equals((String) rec.getAtributes().get(TABLE_NAME))) {
+    		if(!tableName.equals((String) rec.getAttributes().get(TABLE_NAME))) {
     			continue;
     		}
-    		Integer firstPage = (Integer) rec.getAtributes().get(INDEX_FIRST_PAGE);
-    		Integer atrIdx = (Integer) rec.getAtributes().get(ATR_IDX);
+    		Integer firstPage = (Integer) rec.getAttributes().get(INDEX_FIRST_PAGE);
+    		Integer atrIdx = (Integer) rec.getAttributes().get(ATR_IDX);
     		indexes.put(attributes.get(atrIdx), new BxTree(bufferManager, firstPage));
     	}
 		return indexes;
@@ -131,10 +125,10 @@ public class MetaInformationTable {
     
     public boolean createIndex(String tableName, int atributeIdx, String attributeName) {
     	for(Record rec: indexesTable) {
-    		if(!tableName.equals((String) rec.getAtributes().get(TABLE_NAME))) {
+    		if(!tableName.equals((String) rec.getAttributes().get(TABLE_NAME))) {
     			continue;
     		}
-    		Integer atrIdx = (Integer) rec.getAtributes().get(ATR_IDX);
+    		Integer atrIdx = (Integer) rec.getAttributes().get(ATR_IDX);
     		if(atrIdx == atributeIdx) {
     			// Index already exists
     			return false;
@@ -149,7 +143,7 @@ public class MetaInformationTable {
 			BxTree index = new BxTree(bufferManager, indexFirstPage);
 			SecondLevelId atrId = new SecondLevelId(tableName, attributeName);
 			for(Record rec: table) {
-				Integer val = (Integer)rec.getAtributes().get(atrId);
+				Integer val = (Integer)rec.getAttributes().get(atrId);
 				index.insert(val, rec.getRecordId());
 			}
 			tableCache.remove(tableName);

@@ -2,7 +2,6 @@ package ru.spbau.tinydb.cursors;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.queries.WhereCondition;
 import ru.spbau.tinydb.table.Record;
@@ -34,7 +33,7 @@ public class WhereCursor implements Iterator<Record> {
         while (baseCursor.hasNext()) {
             Record values = baseCursor.next();
 
-            if (condition == null || condition.check(values.getAtributes())) {
+            if (condition == null || condition.check(values.getAttributes())) {
                 return values;
             }
         }

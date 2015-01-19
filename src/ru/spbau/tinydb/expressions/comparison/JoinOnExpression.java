@@ -5,6 +5,8 @@ import ru.spbau.tinydb.common.DBException;
 import ru.spbau.tinydb.expressions.Expression;
 import ru.spbau.tinydb.queries.SecondLevelId;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -56,6 +58,16 @@ public class JoinOnExpression implements Expression<Boolean> {
 
     @NotNull
     @Override
+    public List<SecondLevelId> getIds() {
+        List<SecondLevelId> result = new LinkedList<>();
+        result.add(firstId);
+        result.add(secondId);
+
+        return result;
+    }
+
+    @NotNull
+    @Override
     public String toString() {
         return "INNER JOIN " + tableName + " ON " + firstId + " = " + secondId;
     }
@@ -71,7 +83,7 @@ public class JoinOnExpression implements Expression<Boolean> {
         Class<?> secondClass = second.getClass();
 
         if (!first.getClass().equals(second.getClass())) {
-            throw new DBException("uncomparable types: " + firstClass + ", " + secondClass);
+            throw new DBException("incomparable types: " + firstClass + ", " + secondClass);
         }
     }
 }

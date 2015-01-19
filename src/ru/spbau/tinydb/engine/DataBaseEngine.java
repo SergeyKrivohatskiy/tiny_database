@@ -2,7 +2,6 @@ package ru.spbau.tinydb.engine;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import ru.spbau.tinydb.btree.BxTree;
 import ru.spbau.tinydb.btree.BxTreeEntry;
 import ru.spbau.tinydb.bufferManager.BufferManager;
@@ -82,7 +81,7 @@ public class DataBaseEngine implements AutoCloseable {
 
             while (recordIterator.hasNext()) {
                 Record record = recordIterator.next();
-                if (filter.check(record.getAtributes())) {
+                if (filter.check(record.getAttributes())) {
                     table.remove(record.getRecordId());
                     removed += 1;
                 }

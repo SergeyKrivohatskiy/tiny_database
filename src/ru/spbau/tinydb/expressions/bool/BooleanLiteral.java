@@ -4,12 +4,20 @@ import org.jetbrains.annotations.NotNull;
 import ru.spbau.tinydb.expressions.Expression;
 import ru.spbau.tinydb.queries.SecondLevelId;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author adkozlov
  */
 public abstract class BooleanLiteral implements Expression<Boolean> {
+
+    @NotNull
+    @Override
+    public List<SecondLevelId> getIds() {
+        return new LinkedList<>();
+    }
 
     public static class TrueBooleanLiteral extends BooleanLiteral {
 

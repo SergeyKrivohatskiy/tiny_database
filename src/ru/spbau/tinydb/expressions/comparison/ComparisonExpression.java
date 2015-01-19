@@ -6,6 +6,8 @@ import ru.spbau.tinydb.expressions.Expression;
 import ru.spbau.tinydb.expressions.PrintableOperation;
 import ru.spbau.tinydb.queries.SecondLevelId;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,7 +50,16 @@ public abstract class ComparisonExpression<V extends Comparable<V>> implements E
             V mapValue = (V) values.get(id);
             return mapValue.compareTo(value);
         } catch (ClassCastException e) {
-            throw new DBException("uncomparable types", e);
+            throw new DBException("incomparable types", e);
         }
+    }
+
+    @NotNull
+    @Override
+    public List<SecondLevelId> getIds() {
+        List<SecondLevelId> result = new LinkedList<>();
+        result.add(id);
+
+        return result;
     }
 }

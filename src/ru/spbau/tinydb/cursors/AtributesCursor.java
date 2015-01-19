@@ -1,10 +1,10 @@
 package ru.spbau.tinydb.cursors;
 
-import java.util.Iterator;
-import java.util.Map;
-
 import ru.spbau.tinydb.queries.SecondLevelId;
 import ru.spbau.tinydb.table.Record;
+
+import java.util.Iterator;
+import java.util.Map;
 
 public class AtributesCursor implements
         Iterator<Map<SecondLevelId, Object>> {
@@ -22,7 +22,7 @@ public class AtributesCursor implements
 
     @Override
     public Map<SecondLevelId, Object> next() {
-        return baseIterator.next().getAtributes();
+        return baseIterator.next().getAttributes();
     }
 
 	@Override

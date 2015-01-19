@@ -1,6 +1,5 @@
 package ru.spbau.tinydb.bufferManager;
 
-import ru.spbau.tinydb.bufferManager.BufferManager;
 import ru.spbau.tinydb.metainformation.MetaInformationTable;
 import ru.spbau.tinydb.queries.Attribute;
 import ru.spbau.tinydb.queries.SecondLevelId;
@@ -35,7 +34,7 @@ public class MetaInfTest {
         testTable = meta.loadTable("testTable");
 
         for(Record rec: testTable) {
-            if(!rec.getAtributes().get(new SecondLevelId("testTable", "testAttr")).equals("testValue")) {
+            if(!rec.getAttributes().get(new SecondLevelId("testTable", "testAttr")).equals("testValue")) {
                 throw new RuntimeException();
             }
         }

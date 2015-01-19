@@ -6,6 +6,7 @@ import ru.spbau.tinydb.expressions.Expression;
 import ru.spbau.tinydb.expressions.PrintableOperation;
 import ru.spbau.tinydb.queries.SecondLevelId;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,6 +37,18 @@ public abstract class BinaryBooleanExpression<V extends Expression<Boolean>> ext
 
     @NotNull
     protected abstract Boolean executeBinaryOperation(@NotNull Boolean first, @NotNull Boolean second);
+
+    @NotNull
+    @Override
+    public List<SecondLevelId> getIds() {
+        List<SecondLevelId> result = super.getIds();
+
+        if (second != null) {
+            result.addAll(second.getIds());
+        }
+
+        return result;
+    }
 
     @NotNull
     @Override

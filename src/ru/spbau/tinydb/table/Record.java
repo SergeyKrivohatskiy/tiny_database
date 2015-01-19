@@ -1,15 +1,15 @@
 package ru.spbau.tinydb.table;
 
-import java.util.Map;
-
 import ru.spbau.tinydb.queries.SecondLevelId;
 
+import java.util.Map;
+
 public class Record {
-    private final Map<SecondLevelId, Object> atributes;
+    private final Map<SecondLevelId, Object> attributes;
     private final int recordId;
     
     public Record(Map<SecondLevelId, Object> value, int recordId) {
-        this.atributes = value;
+        this.attributes = value;
         this.recordId = recordId;
     }
 
@@ -17,7 +17,7 @@ public class Record {
         return recordId;
     }
 
-    public Map<SecondLevelId, Object> getAtributes() {
-        return atributes;
+    public Map<SecondLevelId, Object> getAttributes() {
+        return attributes;
     }
 }
